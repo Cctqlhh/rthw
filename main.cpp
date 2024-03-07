@@ -70,8 +70,8 @@ int Input()
     }
     for(int i = 0; i < robot_num; i ++) // 机器人信息
     {
-        int sts;
-        scanf("%d%d%d%d", &robot[i].goods, &robot[i].x, &robot[i].y, &sts); // 是否携带物品01 坐标 状态0恢复1正常
+        // int sts;
+        scanf("%d%d%d%d", &robot[i].goods, &robot[i].x, &robot[i].y, &robot[i].status); // 是否携带物品01 坐标 状态0恢复1正常
     }
     for(int i = 0; i < 5; i ++) // 5个船 i对应其id0-4
         scanf("%d%d\n", &boat[i].status, &boat[i].pos); // 状态0移动(运输)1正常装货/运输完成  目标泊位（如果虚拟点-1）
