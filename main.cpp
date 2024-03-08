@@ -1,4 +1,11 @@
 #include <bits/stdc++.h>
+// 标准库
+#include <utility>
+#include <algorithm>
+#include <vector>
+// 算法类头文件
+#include "DStarLite.hpp"
+
 using namespace std;
 
 const int n = 200;

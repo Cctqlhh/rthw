@@ -38,29 +38,29 @@ void DStarLite::computeShortestPath()
   {
     auto [kOld, u] = U.top();
     if ((kOld >= calculateKey(s_start)) and (rhs(s_start) == g(s_start)))
-      break;
+      break; //已找到最佳路线
 
     U.pop();
     auto kNew = calculateKey(u);
 
     if (kOld < kNew)
     {
-      U.push(u, kNew);
+      U.push(u, kNew); //k变大 优先级降低重新放回队列
       continue;
     }
 
     if (g(u) > rhs(u))
     {
-      g(u) = rhs(u);
+      g(u) = rhs(u); // 成本下降，更新G
     }
     else
     {
       g(u) = _INF_;
-      updateVertex(u);
+      updateVertex(u); //成本上升，更新节点信息
     }
     for (const auto &neighbor: neighborStates(u))
     {
-      updateVertex(neighbor);
+      updateVertex(neighbor); // 更新邻居节点信息
     }
   }
 }
@@ -73,18 +73,18 @@ void DStarLite::computeShortestPath()
  */
 void DStarLite::updateVertex(const State &s)
 {
-  if (s != s_goal)
+  if (s != s_goal) // 中间节点
   {
-    rhs(s) = computeRHS(s);
+    rhs(s) = computeRHS(s); //更新当前节点rhs
   }
 
-  if (g(s) != rhs(s))
+  if (g(s) != rhs(s)) // rhs有改变
   {
-    U.update(s, calculateKey(s));
+    U.update(s, calculateKey(s)); // 加入优先队列
   }
   else
   {
-    U.remove(s);
+    U.remove(s); // rhs无改变，移出优先队列，意味着该节点未受影响
   }
 }
 
@@ -161,10 +161,10 @@ vector<State> DStarLite::neighborStates(const State &s) const
     if (nextState.first < 0 or nextState.second < 0
         or static_cast<size_t>(nextState.first) >= _map.size()
         or static_cast<size_t>(nextState.second) >= _map[0].size())
-      continue;
+      continue; //超出边界则下一个点
 
     if (map(nextState))
-      continue;
+      continue; //障碍物则下一个点
 
     neighbors.push_back(nextState);
   }
@@ -182,13 +182,13 @@ vector<State> DStarLite::getPath() const
   vector<State> path = {s_current};
   State s            = s_current;
 
-  while (s != s_goal)
+  while (s != s_goal) // 一直循环直到终点
   {
     State s_next = peekNext(s);
     if (s_next == s)
-      break;
-    s = s_next;
-    path.push_back(s);
+      break; // 下一位置==当前遍历位置，终止循环
+    s = s_next; // 更新当前遍历位置
+    path.push_back(s); // 加入路径
   }
 
   return path;
@@ -203,14 +203,14 @@ vector<State> DStarLite::getPath() const
 State DStarLite::peekNext(const State &s) const
 {
   if (s == s_goal)
-    return s;
+    return s; // 当前位置为终点则返回当前位置
 
-  State s_min = s;
+  State s_min = s; // 初始化最小值为当前位置
   for (const auto &neighbor: neighborStates(s))
   {
     if (g(neighbor) < g(s_min))
     {
-      s_min = neighbor;
+      s_min = neighbor; // 更新最小G值的邻居位置，作为下一个位置
     }
   }
   return s_min;
@@ -224,7 +224,7 @@ State DStarLite::peekNext(const State &s) const
  */
 State DStarLite::moveNext()
 {
-  s_current = peekNext(s_current);
+  s_current = peekNext(s_current); // 更新当前机器人位置
   return s_current;
 }
 
@@ -298,12 +298,12 @@ void DStarLite::clearCell(const State &u)
  */
 void DStarLite::updateMap(const Grid &newMap)
 {
-  if (newMap.size() != _map.size() or newMap[0].size() != _map.size())
+  if (newMap.size() != _map.size() or newMap[0].size() != _map[0].size())
     return;
 
   for (size_t i = 0; i < _map.size(); i++)
   {
-    for (size_t j = 0; j < _map.size(); j++)
+    for (size_t j = 0; j < _map[0].size(); j++)
     {
       if (_map[i][j] != newMap[i][j])
       {

@@ -115,7 +115,7 @@ template<class Tp, class Te> class PriorityQueue
 
     if (priority == p)
       return;
-    p = priority;
+    p = priority; // 优先级不同则更新优先级
     std::make_heap(data.begin(), data.end(), std::greater<pair<Tp, Te>> {});
   }
 

@@ -20,41 +20,41 @@
 
 #define _INF_ 0x2fffffff  // slightly less than INT32_MAX to avoid overflows
 
-typedef std::pair<int, int> State;
-typedef std::pair<int, int> Key;
-typedef std::vector<vector<int>> Grid;
+typedef std::pair<int, int> State; // 位置坐标，x，y
+typedef std::pair<int, int> Key; // KEY
+typedef std::vector<vector<int>> Grid; //二维vector，地图值？
 
 class DStarLite
 {
  public:
   DStarLite(const pair<int, int> &dim, const State &start, const State &goal);
-  vector<State> getPath() const;
-  State peekNext(const State &s) const;
-  State moveNext();
-  void toggleCell(const State &u);
-  void blockCell(const State &u);
-  void clearCell(const State &u);
-  void updateMap(const Grid &newMap);
+  vector<State> getPath() const; //获取路径，返回坐标vector
+  State peekNext(const State &s) const; //返回下一个位置
+  State moveNext(); //移动到下一个位置
+  void toggleCell(const State &u); //切换位置状态
+  void blockCell(const State &u); //阻塞障碍物
+  void clearCell(const State &u); //清除障碍物
+  void updateMap(const Grid &newMap); //更新地图
 
  private:
-  Grid _map;
-  State s_start {0, 0};    // s_start is the robot start location in the current plan
-  State s_goal {0, 0};     // s_goal is the goal location
-  State s_current {0, 0};  // s_current is the current robot location
-  Grid _g;    // The g_value is an estimate of the distance to goal distance from each location
-  Grid _rhs;  // The rhs values are one-step lookahead values based on the g-values
-  PriorityQueue<Key, State> U;
-  int km {0};
-  vector<State> actions {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
+  Grid _map; //存储网格状态，0为可通行，1为障碍物
+  State s_start {0, 0};    // s_start is the robot start location in the current plan 机器人起始位置
+  State s_goal {0, 0};     // s_goal is the goal location 机器人目的位置
+  State s_current {0, 0};  // s_current is the current robot location 机器人当前位置
+  Grid _g;    // The g_value is an estimate of the distance to goal distance from each location 值G
+  Grid _rhs;  // The rhs values are one-step lookahead values based on the g-values 值rhs
+  PriorityQueue<Key, State> U; //优先队列，存放要处理的节点，其KEY和位置坐标
+  int km {0}; //内部计数器，用于更新优先队列，修饰Key，改变Key的值
+  vector<State> actions {{1, 0}, {-1, 0}, {0, -1}, {0, 1}}; //移动 右左上下0123
   // vector<State> actions {{-1, 0}, {-1, 1}, {0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}, {-1, -1}};
 
-  void computeShortestPath();
-  void updateVertex(const State &u);
-  int computeRHS(const State &u) const;
-  Key calculateKey(const State &s) const;
-  int heuristic(const State &s1, const State &s2) const;
-  int cost(const State &s1, const State &s2) const;
-  vector<State> neighborStates(const State &s) const;
+  void computeShortestPath(); // 计算最短路径
+  void updateVertex(const State &u); // 更新节点u信息
+  int computeRHS(const State &u) const; // 计算节点u的rhs值
+  Key calculateKey(const State &s) const; // 计算节点s的Key值，用于优先队列
+  int heuristic(const State &s1, const State &s2) const; // 启发式评估节点s1到s2的成本
+  int cost(const State &s1, const State &s2) const; // 评估节点s1到s2的成本
+  vector<State> neighborStates(const State &s) const; // 返回节点s的邻居节点
 
   int map(const State &s) const;
   int &map(const State &s);
