@@ -18,6 +18,8 @@ int money, boat_capacity, id;
 char ch[N][N];
 int gds[N][N];
 
+int a = 1;
+
 
 void Init()
 {
