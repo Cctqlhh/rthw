@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <vector>
 // 算法类头文件
-#include "DStarLite.hpp"
+#include "include/DStarLite.hpp"
 // 类与全局变量定义头文件
 #include "Robot.hpp"
 #include "Berth.hpp"
