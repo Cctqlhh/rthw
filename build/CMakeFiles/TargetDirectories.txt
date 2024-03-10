@@ -1,3 +1,0 @@
-D:/111XDU/C++/rthw/rthw/build/CMakeFiles/main.dir
-D:/111XDU/C++/rthw/rthw/build/CMakeFiles/edit_cache.dir
-D:/111XDU/C++/rthw/rthw/build/CMakeFiles/rebuild_cache.dir
