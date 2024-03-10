@@ -11,6 +11,7 @@
 #define __DSTARLITE_DSTARLITE_HPP__
 
 #include <vector>
+#include <deque>
 #include <utility>
 #include <algorithm>
 #include <cmath>
@@ -27,8 +28,11 @@ typedef std::vector<vector<int>> Grid; //二维vector，地图值？
 class DStarLite
 {
  public:
+  DStarLite(){}
   DStarLite(const pair<int, int> &dim, const State &start, const State &goal);
-  vector<State> getPath() const; //获取路径，返回坐标vector
+  DStarLite(const Grid &map, const pair<int, int> &dim, const State &start, const State &goal);
+  // vector<State> getPath() const; //获取路径，返回坐标vector
+  deque<State> getPath() const; //获取路径，返回坐标deque
   State peekNext(const State &s) const; //返回下一个位置
   State moveNext(); //移动到下一个位置
   void toggleCell(const State &u); //切换位置状态
@@ -45,7 +49,7 @@ class DStarLite
   Grid _rhs;  // The rhs values are one-step lookahead values based on the g-values 值rhs
   PriorityQueue<Key, State> U; //优先队列，存放要处理的节点，其KEY和位置坐标
   int km {0}; //内部计数器，用于更新优先队列，修饰Key，改变Key的值
-  vector<State> actions {{1, 0}, {-1, 0}, {0, -1}, {0, 1}}; //移动 右左上下0123
+  vector<State> actions {{0, 1}, {0, -1}, {-1, 0}, {1, 0}}; //移动 右左上下0123
   // vector<State> actions {{-1, 0}, {-1, 1}, {0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}, {-1, -1}};
 
   void computeShortestPath(); // 计算最短路径

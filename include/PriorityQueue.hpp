@@ -18,6 +18,7 @@ using std::pair;
 using std::pop_heap;
 using std::push_heap;
 using std::vector;
+using std::deque;
 
 /**
  * @brief Priority Queue container class. Adds "remove element by value"
