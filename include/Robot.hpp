@@ -3,6 +3,8 @@
 
 using namespace std;
 
+typedef std::pair<State, int> Things; // 货物State（x, y）， 值value
+
 struct Robot
 {
     // int x, y, goods;
@@ -20,6 +22,10 @@ struct Robot
     DStarLite dsl;
     deque<State> path;
     Grid map;
+    State berthgoal;    // 机器人的目标泊位
+    deque<vector<Things>> things; // 货物队列
+
+
     // void wat(){
     //     // 是否重新选取目标地点（条件：到达终点/有更好的目标地点选取）
     //     // 选取目标，判断目标是否改变，改变则完全重新规划路径
@@ -98,6 +104,45 @@ struct Robot
     void updateMap(Grid &gds)
     {
         gds[pos.first][pos.second] = 1;
+    }
+
+    void chooseThings(const deque<vector<Things>> &global_things){
+        // 计算开始复制的位置。确保不会超出范围。
+        auto start = global_things.size() > 5 ? global_things.end() - 5 : global_things.begin();
+
+        // 创建一个新的deque，包含最后五个元素
+        
+        things = deque<vector<Things>>(start, global_things.end());
+        deque<vector<int>> distance;
+        for(auto i = things.begin(); i != things.end(); i++){
+            vector<int> temp;
+            for(auto j = i->begin(); j != i->end(); j++){
+                temp.push_back(manhattanDistance(pos.first, pos.second, j->first.first, j->first.second));
+            }
+            distance.push_back(temp);
+        }
+    int minDistance = std::numeric_limits<int>::max();
+    size_t minDequeIndex = 0;
+    size_t minVectorIndex = 0;
+
+    // 遍历deque
+    for (size_t i = 0; i < distance.size(); ++i) {
+        // 遍历vector
+        for (size_t j = 0; j < distance[i].size(); ++j) {
+            if (distance[i][j] < minDistance) {
+                minDistance = distance[i][j];
+                minDequeIndex = i;
+                minVectorIndex = j;
+            }
+        }
+    }
+
+    
+
+    }
+
+    int manhattanDistance(int x1, int y1, int x2, int y2) {
+        return std::abs(x1 - x2) + std::abs(y1 - y2);
     }
 
 };

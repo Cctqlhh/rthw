@@ -33,7 +33,8 @@ int main()
         // for(int i = 0; i < 2; i ++){ // 第i个机器人的操作
         // 路径规划 
             robot[i].getMap(gds); // 传入地图
-            robot[i].planPath({berth[i].x+2, berth[i].y+2}); // 修改目标，获取路径
+            //机器人0 5对应 0 泊位
+            robot[i].planPath(robot[i].berthgoal); // 修改目标，获取路径
             // robot[i].planPath({29, 147}); // 修改目标，获取路径
             robot[i].move(); // 移动
             robot[i].updateMap(gds); // 更新地图
@@ -70,7 +71,7 @@ int main()
         // for(int i = 0; i < 2; i ++){ // 第i个机器人的操作
         // 路径规划 
             robot[i].getMap(gds); // 传入地图
-            robot[i].planPath({berth[i].x+2, berth[i].y+2}); // 修改目标，获取路径
+            robot[i].planPath(robot[i].berthgoal); // 修改目标，获取路径
             // robot[i].planPath({29, 147}); // 修改目标，获取路径
             robot[i].move(); // 移动
             robot[i].updateMap(gds); // 更新地图

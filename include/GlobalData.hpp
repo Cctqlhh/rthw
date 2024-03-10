@@ -5,20 +5,28 @@
 #include "Boat.hpp"
 using namespace std;
 
+typedef std::pair<State, int> Things; // 货物State（x, y）， 值value
+
 const int n = 200;
 const int robot_num = 10;
 const int berth_num = 10;
 const int N = 210;
 
 Robot robot[robot_num + 10];
-Berth berth[berth_num + 10];
+// Berth berth[berth_num + 10];
+vector<Berth> berth(10);
 Boat boat[10];
 
 int money, boat_capacity, id;
 char ch[N][N];
 Grid gds(n, vector<int>(n, 1));
 
+deque<vector<Things>> things;
+vector<Things> cur_things;
+
 //���ֱ���
+
+bool compareByTransportTime(const Berth& a, const Berth& b);
 
 void Init()
 {
@@ -42,6 +50,24 @@ void Init()
         scanf("%d", &id); // ��λ��� 0-9
         scanf("%d%d%d%d", &berth[id].x, &berth[id].y, &berth[id].transport_time, &berth[id].loading_speed); // ��λ���Ͻ�����4*4 ����ʱ��֡�� װ���ٶ�ÿ֡װ����
     }
+
+    
+    // 根据transport_time对vector<Berth>排序
+    sort(berth.begin(), berth.end(), compareByTransportTime);
+
+    for(int i = 0;i<5;i++)
+    {
+        robot[i].berthgoal = {berth[i%5].x, berth[i%5].y};
+    }
+    
+    for(int i = 5;i<10;i++)
+    {
+        robot[i].berthgoal = {berth[i%5].x+3, berth[i%5].y+3};
+    }
+
+
+
+
     scanf("%d", &boat_capacity); // �����������װ����Ʒ��
     char okk[100];
     scanf("%s", okk); // ��ȡOK
@@ -51,6 +77,7 @@ void Init()
 
 int Input()
 {
+    //从第1帧开始
     scanf("%d%d", &id, &money); // 帧数，已经获取的money
     int num;
     scanf("%d", &num); // ������������0-10
@@ -58,7 +85,15 @@ int Input()
     {
         int x, y, val;
         scanf("%d%d%d", &x, &y, &val); // λ�� ���<=1000
+        cur_things.push_back({{x, y}, val});
     }
+    if(things.size() == 20)
+    {
+        things.pop_front();
+    }
+
+    things.push_back(cur_things);
+
     for(int i = 0; i < robot_num; i ++) // ��������Ϣ
     {
         // int sts;
@@ -69,6 +104,12 @@ int Input()
     char okk[100];
     scanf("%s", okk); //����OK
     return id;
+}
+
+
+// berth比较函数
+bool compareByTransportTime(const Berth& a, const Berth& b) {
+    return a.transport_time < b.transport_time;
 }
 
 
