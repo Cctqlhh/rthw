@@ -19,46 +19,7 @@ int main()
 {
     Init(); //初始化
     
-    for(int zhen = 1; zhen <= 10; zhen ++) // 按帧处理
-    {
-        int id = Input(); // 读取场面信息 id第几帧
-        //第一帧 目标位置为机器人初始位置
-        if(zhen == 1){
-            for(int i = 0; i < robot_num; i ++){
-                robot[i].goal = robot[i].pos;   //goal 不是有参构造赋值的，而是通过赋值实现
-            }
-        }
-
-
-        for(int i = 0; i < zhen; i ++){ // 第i个机器人的操作
-        // for(int i = 0; i < 2; i ++){ // 第i个机器人的操作
-        // 路径规划 
-            robot[i].getMap(gds); // 传入初始化的地图
-            //机器人0 5对应 0 泊位
-            robot[i].planPath(robot[i].berthgoal); // 修改目标，获取路径
-            // robot[i].planPath({29, 147}); // 修改目标，获取路径
-            robot[i].move(); // 移动
-            robot[i].updateMap(gds); // 更新地图
-            // for (size_t j = 0; j < robot[i].path.size(); ++j) {
-            //     cerr << robot[i].path[j].first << "," << robot[i].path[j].second << endl;
-            //     // cerr << robot[i].path.back().first << "," << robot[i].path.back().second << endl;
-            // }
-            // cerr << robot[i].path.back().first << "," << robot[i].path.back().second << endl;
-
-            if(robot[i].cmd != -1)
-                printf("move %d %d\n", i, robot[i].cmd);
-            printf("get %d\n", i); //指令：get 机器人id0-9  取货
-            printf("pull %d\n", i); //指令：pull 机器人id0-9  放货
-        //船指令
-            // ship id0-4 泊位id0-9 船移动到泊位
-            // go id0-4 船运输货物到虚拟点
-        }
-
-
-        puts("OK"); // 所有指令结束后OK
-        fflush(stdout);
-    }
-    for(int zhen = 11; zhen <= 15000; zhen ++) // 按帧处理
+    for(int zhen = 1; zhen <= 15000; zhen ++) // 按帧处理
     {
         int id = Input(); // 读取场面信息 id第几帧
         if(zhen == 1){
@@ -69,7 +30,7 @@ int main()
 
 
         for(int i = 0; i < robot_num; i ++){ // 第i个机器人的操作
-        // for(int i = 0; i < 2; i ++){ // 第i个机器人的操作
+        // for(int i = 0; i < 5; i ++){ // 第i个机器人的操作
         // 路径规划 
             robot[i].getMap(gds); // 传入地图
             robot[i].planPath(robot[i].berthgoal); // 修改目标，获取路径
