@@ -64,8 +64,8 @@ void Init()
     // 设置5艘船的固定目标泊位为前五个泊位
     for(int i = 0; i < 5; i ++) //判题器的泊位序号是泊位的id号
     {
-        boat[i].pos_berth = berth_order[i].Berth_id;    // 每艘船的固定目标泊位
-        boat[i].pos = berth_order[i].Berth_id;          // 每艘船的目标泊位
+        boat[i].goal_berth = berth_order[i].Berth_id;    // 每艘船的固定目标泊位
+        boat[i].goal = berth_order[i].Berth_id;          // 每艘船的目标泊位
     }
 
 
@@ -122,7 +122,7 @@ int Input()
     }
     for(int i = 0; i < 5; i ++) // 5���� i��Ӧ��id0-4
     {
-        scanf("%d%d\n", &boat[i].status, &boat[i].pos); // ״̬0�ƶ�(����)1����װ��/�������  Ŀ�겴λ����������-1��
+        scanf("%d%d\n", &boat[i].status, &boat[i].goal); // ״̬0�ƶ�(����)1����װ��/�������  Ŀ�겴λ����������-1��
     }
 
 

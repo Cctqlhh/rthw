@@ -32,7 +32,7 @@ int main()
             // 在第一帧让所有5个轮船到离虚拟点最近的前五个泊位
             for (int i = 0; i < 5; i++)
             {
-                printf("ship %d %d\n", i, boat[i].pos);
+                printf("ship %d %d\n", i, boat[i].goal);
             }
         }
 
@@ -84,18 +84,18 @@ int main()
             if (boat[i].status == 1) // 船在移动完成或者装货状态（装货状态是到达泊位，不装货状态是到达虚拟点）
             {
                 // 轮船到达泊位，开始装货   每一帧一定装货
-                if (boat[i].pos != -1) // 船的目标不是虚拟点，船到达泊位
+                if (boat[i].goal != -1) // 船的目标不是虚拟点，船到达泊位
                 {
                     // 泊位装卸货物（判题器自动）   用于维护5个船的货物数量 一定会发生，所以放在前面
-                    if (berth[boat[i].pos_berth].Berth_num <= berth[boat[i].pos_berth].loading_speed)
+                    if (berth[boat[i].goal_berth].Berth_num <= berth[boat[i].goal_berth].loading_speed)
                     {
-                        boat[i].num += berth[boat[i].pos_berth].Berth_num;
-                        berth[boat[i].pos_berth].Berth_num = 0; // 泊位的物品数量到零 全部裝上船
+                        boat[i].num += berth[boat[i].goal_berth].Berth_num;
+                        berth[boat[i].goal_berth].Berth_num = 0; // 泊位的物品数量到零 全部裝上船
                     }
                     else
                     {
-                        boat[i].num += berth[boat[i].pos_berth].loading_speed;
-                        berth[boat[i].pos_berth].Berth_num -= berth[boat[i].pos_berth].loading_speed;
+                        boat[i].num += berth[boat[i].goal_berth].loading_speed;
+                        berth[boat[i].goal_berth].Berth_num -= berth[boat[i].goal_berth].loading_speed;
                     }
                     // 只有在船装满货物之后，才给船下达指令
                     if (boat[i].num < boat_capacity)
@@ -106,16 +106,16 @@ int main()
                     if (boat[i].num >= boat_capacity)
                     {
                         boat[i].num = boat_capacity; // 船装满之后，船的货物数量不超过船的容量
-                        berth[boat[i].pos_berth].Berth_num = berth[boat[i].pos_berth].Berth_num + (boat[i].num - boat_capacity);
+                        berth[boat[i].goal_berth].Berth_num = berth[boat[i].goal_berth].Berth_num + (boat[i].num - boat_capacity);
                     }
                     printf("go %d\n", i);
                     
                 }
-                if (boat[i].pos == -1) // 船的目标是虚拟点，船到达虚拟点
+                if (boat[i].goal == -1) // 船的目标是虚拟点，船到达虚拟点
                 {
                     boat[i].num = 0; // 清空船的货物数量 全部转换成价值
-                    boat[i].pos = boat[i].pos_berth;
-                    printf("ship %d %d\n", i, boat[i].pos);
+                    boat[i].goal = boat[i].goal_berth;
+                    printf("ship %d %d\n", i, boat[i].goal);
                 }
             }
         }
