@@ -17,7 +17,9 @@ const int N = 210;
 Robot robot[robot_num + 10];
 // Berth berth[berth_num + 10];
 vector<Berth> berth(10);
-Boat boat[10];
+vector<Berth> berth_order(10);  //对berth进行排序后的容器
+// Boat boat[10];
+vector<Boat> boat(5);
 
 int money, boat_capacity, id;
 char ch[N][N];
@@ -49,26 +51,43 @@ void Init()
         int id;
         scanf("%d", &id); // ��λ��� 0-9
         scanf("%d%d%d%d", &berth[id].x, &berth[id].y, &berth[id].transport_time, &berth[id].loading_speed); // ��λ���Ͻ�����4*4 ����ʱ��֡�� װ���ٶ�ÿ֡װ����
+        berth[id].Berth_id = id;
+        berth[id].Berth_num = 0;    // 泊位的物品数量清零（初始化）
     }
 
-    
-    // 根据transport_time对vector<Berth>排序
-    sort(berth.begin(), berth.end(), compareByTransportTime);
+    // 刘：我感觉最好不要对原berth的输入顺序打乱，复制一个新的泊位容器，对新容器排序打乱之后，通过每个元素的id 对应原容器的序号
+    berth_order = berth; // 复制一份berth_order，用于排序
+    sort(berth_order.begin(), berth_order.end(), compareByTransportTime);
+    // 根据transport_time对vector<Berth>berth排序   排序后的vector元素序号和Berth_id不一致
+    // sort(berth.begin(), berth.end(), compareByTransportTime);
+
+    // 设置5艘船的固定目标泊位为前五个泊位
+    for(int i = 0; i < 5; i ++) //判题器的泊位序号是泊位的id号
+    {
+        boat[i].pos_berth = berth_order[i].Berth_id;    // 每艘船的固定目标泊位
+        boat[i].pos = berth_order[i].Berth_id;          // 每艘船的目标泊位
+    }
+
+
 
     for(int i = 0;i<5;i++)
     {
-        robot[i].berthgoal = {berth[i%5].x, berth[i%5].y};
+        robot[i].berthgoal = {berth_order[i%5].x, berth[i%5].y};  // 机器人的目标泊位是泊位的坐标state
+        robot[i].berthgoal_id = berth_order[i%5].Berth_id;  // 机器人的目标泊位的id
     }
     
     for(int i = 5;i<10;i++)
     {
-        robot[i].berthgoal = {berth[i%5].x+3, berth[i%5].y+3};
+        robot[i].berthgoal = {berth_order[i%5].x+3, berth[i%5].y+3};
+        robot[i].berthgoal_id = berth_order[i%5].Berth_id;  // 机器人的目标泊位的id
     }
 
-
-
-
     scanf("%d", &boat_capacity); // �����������װ����Ʒ��
+    for(int i = 0;i<5;i++)
+    {
+        boat[i].num = 0; // 船的载货量初始化为0
+    }
+
     char okk[100];
     scanf("%s", okk); // ��ȡOK
     printf("OK\n"); // �ظ�ok
@@ -89,7 +108,7 @@ int Input()
         scanf("%d%d%d", &x, &y, &val); // λ�� ���<=1000
         cur_things.push_back({{x, y}, val});
     }
-    if(things.size() == 20)
+    if(things.size() == 20)     //改为1000帧 后面就全部计算距离，相同思路
     {
         things.pop_front();
     }
@@ -105,6 +124,9 @@ int Input()
     {
         scanf("%d%d\n", &boat[i].status, &boat[i].pos); // ״̬0�ƶ�(����)1����װ��/�������  Ŀ�겴λ����������-1��
     }
+
+
+    
     char okk[100];
     scanf("%s", okk); //����OK
     return id;

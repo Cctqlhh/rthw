@@ -8,10 +8,10 @@ typedef std::pair<State, int> Things; // 货物State（x, y）， 值value
 struct Robot
 {
     // int x, y, goods;
-    int goods = 0; // 0无货，1有货
+    int goods = 0;  // 0无货，1有货
     int cmd = -1;
     // int cmd;
-    State pos;
+    State pos;      // 机器人当前位置
     int status = 1; // 1正常，0恢复中
     // int mbx, mby;
     State goal;
@@ -23,7 +23,8 @@ struct Robot
     DStarLite dsl;
     deque<State> path;
     Grid map;
-    State berthgoal;    // 机器人的目标泊位
+    State berthgoal;    // 机器人的目标泊位位置
+    int berthgoal_id;   // 机器人的目标泊位id
     deque<vector<Things>> things; // 货物队列
 
 
@@ -140,8 +141,8 @@ struct Robot
             }
         }
 
-        things[minDequeIndex][minVectorIndex];  //返回Things类型
-
+        // things[minDequeIndex][minVectorIndex];  //返回Things类型
+        
 
 
     }

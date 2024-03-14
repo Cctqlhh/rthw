@@ -3,10 +3,13 @@ using namespace std;
 
 struct Berth
 {
+    int Berth_id;
     int x;
     int y;
     int transport_time;
     int loading_speed;
+    int Berth_num;  // 泊位内当前的物品数量
+
     Berth(){}
     Berth(int x, int y, int transport_time, int loading_speed) {
         this -> x = x;
