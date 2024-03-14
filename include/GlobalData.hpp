@@ -38,12 +38,6 @@ void Init()
             if(ch[i][j] == '.' or ch[i][j] == 'B') {
                 gds[i-1][j-1] = 0;
             }
-            // if(ch[i][j] == 'A') {
-            //     gds[i-1][j-1] = 1;
-            // }
-            // else {
-            //     gds[i-1][j-1] = 1;
-            // }
         }
     }
     for(int i = 0; i < berth_num; i ++) // ��λ 10
@@ -52,7 +46,7 @@ void Init()
         scanf("%d", &id); // ��λ��� 0-9
         scanf("%d%d%d%d", &berth[id].x, &berth[id].y, &berth[id].transport_time, &berth[id].loading_speed); // ��λ���Ͻ�����4*4 ����ʱ��֡�� װ���ٶ�ÿ֡װ����
         berth[id].Berth_id = id;
-        berth[id].Berth_num = 0;    // 泊位的物品数量清零（初始化）
+        berth[id].num_in_berth = 0;    // 泊位的物品数量清零（初始化）
     }
 
     // 刘：我感觉最好不要对原berth的输入顺序打乱，复制一个新的泊位容器，对新容器排序打乱之后，通过每个元素的id 对应原容器的序号

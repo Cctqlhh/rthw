@@ -8,7 +8,7 @@ struct Berth
     int y;
     int transport_time;
     int loading_speed;
-    int Berth_num;  // 泊位内当前的物品数量
+    int num_in_berth;  // 泊位内当前的物品数量
 
     Berth(){}
     Berth(int x, int y, int transport_time, int loading_speed) {
