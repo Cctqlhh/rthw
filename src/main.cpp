@@ -36,13 +36,7 @@ int main()
             robot[i].planPath(robot[i].berthgoal); // 修改目标，获取路径
             // robot[i].planPath({29, 147}); // 修改目标，获取路径
             robot[i].move(); // 移动
-            robot[i].updateMap(gds); // 更新地图
-            // for (size_t j = 0; j < robot[i].path.size(); ++j) {
-            //     cerr << robot[i].path[j].first << "," << robot[i].path[j].second << endl;
-            //     // cerr << robot[i].path.back().first << "," << robot[i].path.back().second << endl;
-            // }
-            // cerr << robot[i].path.back().first << "," << robot[i].path.back().second << endl;
-
+            
             if(robot[i].cmd != -1)
                 printf("move %d %d\n", i, robot[i].cmd);
             printf("get %d\n", i); //指令：get 机器人id0-9  取货
@@ -50,6 +44,8 @@ int main()
         //船指令
             // ship id0-4 泊位id0-9 船移动到泊位
             // go id0-4 船运输货物到虚拟点
+
+            robot[i].updateMap(gds); // 更新地图
         }
 
 
