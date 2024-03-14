@@ -6,7 +6,7 @@
 using namespace std;
 
 typedef std::pair<int, int> State; // 位置坐标，x，y
-typedef std::pair<State, int> Things; // 货物State（x, y）， 值value
+// typedef std::pair<State, int> Things; // 货物State（x, y）， 值value
 typedef std::vector<vector<int>> Grid; //二维vector，地图值？
 
 const int n = 200;
@@ -23,8 +23,8 @@ int money, boat_capacity, id;
 char ch[N][N];
 Grid gds(n, vector<int>(n, 1)); //全1地图
 
-deque<vector<Things>> things;
-vector<Things> cur_things;
+// deque<vector<Things>> things;
+// vector<Things> cur_things;
 
 bool compareByTransportTime(const Berth& a, const Berth& b);
 
@@ -80,21 +80,26 @@ int Input()
     //从第1帧开始 从1开始递增
     scanf("%d%d", &id, &money); // 帧数，已经获取的money
     //当前帧的物品信息cur_things在每一帧填入前清空
-    cur_things.clear();
+
+    // cur_things.clear();
+
     int num;
     scanf("%d", &num); // ������������0-10
     for(int i = 1; i <= num; i ++) // ����������Ϣ
     {
         int x, y, val;
         scanf("%d%d%d", &x, &y, &val); // λ�� ���<=1000
-        cur_things.push_back({{x, y}, val});
-    }
-    if(things.size() == 20)
-    {
-        things.pop_front();
+
+        // cur_things.push_back({{x, y}, val});
+
     }
 
-    things.push_back(cur_things);
+    // if(things.size() == 20)
+    // {
+    //     things.pop_front();
+    // }
+
+    // things.push_back(cur_things);
 
     for(int i = 0; i < robot_num; i ++) // ��������Ϣ
     {
