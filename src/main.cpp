@@ -32,6 +32,7 @@ int main()
             // 在第一帧让所有5个轮船到离虚拟点最近的前五个泊位
             for (int i = 0; i < 5; i++)
             {
+                boat[i].goal = boat[i].goal_berth;     // 每艘船的目标泊位
                 printf("ship %d %d\n", i, boat[i].goal);
             }
         }

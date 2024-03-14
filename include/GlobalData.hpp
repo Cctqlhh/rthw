@@ -65,7 +65,8 @@ void Init()
     for(int i = 0; i < 5; i ++) //判题器的泊位序号是泊位的id号
     {
         boat[i].goal_berth = berth_order[i].Berth_id;    // 每艘船的固定目标泊位
-        boat[i].goal = berth_order[i].Berth_id;          // 每艘船的目标泊位
+        // 船的目标泊位在第一帧input的时候被覆盖为-1 因为此时还没有下达移动命令，机器人目标泊位还处于-1状态
+        // boat[i].goal = berth_order[i].Berth_id;          // 每艘船的目标泊位
     }
 
 
