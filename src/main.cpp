@@ -74,51 +74,51 @@ int main()
             //  go id0-4 船运输货物到虚拟点
         }
 
-        // // 轮船指令
-        // for (size_t i = 0; i < 5; i++)
-        // {
-        //     if (boat[i].status == 0) // 船在移动中 不做任何其他事情
-        //     {
-        //         continue;
-        //     }
-        //     if (boat[i].status == 1) // 船在移动完成或者装货状态（装货状态是到达泊位，不装货状态是到达虚拟点）
-        //     {
-        //         // 轮船到达泊位，开始装货   每一帧一定装货
-        //         if (boat[i].pos != -1) // 船的目标不是虚拟点，船到达泊位
-        //         {
-        //             // 泊位装卸货物（判题器自动）   用于维护5个船的货物数量 一定会发生，所以放在前面
-        //             if (berth[boat[i].pos_berth].Berth_num <= berth[boat[i].pos_berth].loading_speed)
-        //             {
-        //                 boat[i].num += berth[boat[i].pos_berth].Berth_num;
-        //                 berth[boat[i].pos_berth].Berth_num = 0; // 泊位的物品数量到零 全部裝上船
-        //             }
-        //             else
-        //             {
-        //                 boat[i].num += berth[boat[i].pos_berth].loading_speed;
-        //                 berth[boat[i].pos_berth].Berth_num -= berth[boat[i].pos_berth].loading_speed;
-        //             }
-        //             // 只有在船装满货物之后，才给船下达指令
-        //             if (boat[i].num < boat_capacity)
-        //             {
-        //                 continue;   // 若该船没有装满，则不给该船下达指令
-        //             }
-        //             //船的物品数量被程序装超载，但实际上船不会超载，满了就不会再装了
-        //             if (boat[i].num >= boat_capacity)
-        //             {
-        //                 boat[i].num = boat_capacity; // 船装满之后，船的货物数量不超过船的容量
-        //                 berth[boat[i].pos_berth].Berth_num = berth[boat[i].pos_berth].Berth_num + (boat[i].num - boat_capacity);
-        //             }
-        //             printf("go %d\n", i);
+        // 轮船指令
+        for (size_t i = 0; i < 5; i++)
+        {
+            if (boat[i].status == 0) // 船在移动中 不做任何其他事情
+            {
+                continue;
+            }
+            if (boat[i].status == 1) // 船在移动完成或者装货状态（装货状态是到达泊位，不装货状态是到达虚拟点）
+            {
+                // 轮船到达泊位，开始装货   每一帧一定装货
+                if (boat[i].pos != -1) // 船的目标不是虚拟点，船到达泊位
+                {
+                    // 泊位装卸货物（判题器自动）   用于维护5个船的货物数量 一定会发生，所以放在前面
+                    if (berth[boat[i].pos_berth].Berth_num <= berth[boat[i].pos_berth].loading_speed)
+                    {
+                        boat[i].num += berth[boat[i].pos_berth].Berth_num;
+                        berth[boat[i].pos_berth].Berth_num = 0; // 泊位的物品数量到零 全部裝上船
+                    }
+                    else
+                    {
+                        boat[i].num += berth[boat[i].pos_berth].loading_speed;
+                        berth[boat[i].pos_berth].Berth_num -= berth[boat[i].pos_berth].loading_speed;
+                    }
+                    // 只有在船装满货物之后，才给船下达指令
+                    if (boat[i].num < boat_capacity)
+                    {
+                        continue;   // 若该船没有装满，则不给该船下达指令
+                    }
+                    //船的物品数量被程序装超载，但实际上船不会超载，满了就不会再装了
+                    if (boat[i].num >= boat_capacity)
+                    {
+                        boat[i].num = boat_capacity; // 船装满之后，船的货物数量不超过船的容量
+                        berth[boat[i].pos_berth].Berth_num = berth[boat[i].pos_berth].Berth_num + (boat[i].num - boat_capacity);
+                    }
+                    printf("go %d\n", i);
                     
-        //         }
-        //         if (boat[i].pos == -1) // 船的目标是虚拟点，船到达虚拟点
-        //         {
-        //             boat[i].num = 0; // 清空船的货物数量 全部转换成价值
-        //             boat[i].pos = boat[i].pos_berth;
-        //             printf("ship %d %d\n", i, boat[i].pos);
-        //         }
-        //     }
-        // }
+                }
+                if (boat[i].pos == -1) // 船的目标是虚拟点，船到达虚拟点
+                {
+                    boat[i].num = 0; // 清空船的货物数量 全部转换成价值
+                    boat[i].pos = boat[i].pos_berth;
+                    printf("ship %d %d\n", i, boat[i].pos);
+                }
+            }
+        }
 
         puts("OK"); // 所有指令结束后OK
         fflush(stdout);
