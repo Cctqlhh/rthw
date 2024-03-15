@@ -12,6 +12,7 @@
 #include "../include/Berth.hpp"
 #include "../include/Boat.hpp"
 #include "../include/GlobalData.hpp"
+#include "../include/Things.hpp"
 using namespace std;
 
 
