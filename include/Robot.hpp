@@ -16,7 +16,7 @@ struct Robot
     // int mbx, mby;
     State goal; //目标
     int wait = 0; // 因障碍等待的次数，达到1则重新规划路线，否则等待，并+1
-    int plan_ready = 0; // 0未准备好，1准备好
+    int plan_ready = 0; // 0未准备好，1准备好，-1正在规划
 
     Robot() {}
     Robot(int startX, int startY):
@@ -44,7 +44,7 @@ struct Robot
 
     void planPath(){
         // 需要等待规划完成
-        if(plan_ready == 1){
+        if(plan_ready == 1){ // 规划完了
             if(goal == dsl.goal() and pos != dsl.goal()){ 
                 // 目标地点未变，且未到达目标地点，不用重新规划，可移动，判断机器人障碍
                 
@@ -63,7 +63,7 @@ struct Robot
             }
             else{ // 目标改变，重新规划路径 / 目标未变，但已到达目标地点，重新规划路径（不存在这种情况，要在其他地方维护goal，即改变目标时goal要改变）
                 // 加入计算队列
-                // rePlan(goal);
+                // rePlan();
                 plan_ready = 0; // 重新规划路径，未准备好
                 wait = 0; // 等待清零
             }
@@ -73,10 +73,10 @@ struct Robot
         
     }
 
-    void rePlan(State new_goal) // 改变目标，重新规划路径
+    void rePlan() // goal为新目标，重新规划路径
     {
-        goal = new_goal;
         dsl = DStarLite(map, {200, 200}, pos, goal);
+        plan_ready = 1;
     }
 
     void adjustPath()
