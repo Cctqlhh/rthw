@@ -98,6 +98,12 @@ int main()
                         boat[i].num += berth[boat[i].goal_berth].loading_speed;
                         berth[boat[i].goal_berth].Berth_num -= berth[boat[i].goal_berth].loading_speed;
                     }
+                    // 船最后一次去虚拟点的时候如果没有装满物品也需要出发并且能够在最后到达虚拟点，避免浪费最后装的物品
+                    if (15000 - zhen <= berth[boat[i].goal_berth].transport_time + 10)  //可修改
+                    {
+                        printf("go %d\n", i);
+                        continue; // 船最后一次去虚拟点，且没有装满物品，不再给该船下达指令
+                    }
                     // 只有在船装满货物之后，才给船下达指令
                     if (boat[i].num < boat_capacity)
                     {
