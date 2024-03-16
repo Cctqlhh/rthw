@@ -10,8 +10,8 @@ typedef std::pair<int, int> State; // 位置坐标，x，y
 // typedef std::pair<State, int> Things; // 货物State（x, y）， 值value
 typedef std::vector<vector<int>> Grid; //二维vector，地图值？
 
-//创建储存全图物品信息的map
-map<int, vector<Things>> things_map;
+// //创建储存全图物品信息的map
+// map<int, vector<Things>> things_map;
 
 const int n = 200;
 const int robot_num = 10;
@@ -117,8 +117,8 @@ int Input()
         berth[boat[i].goal_berth].choose_nearest_thing(cur_things);
     }
 
-    //当前帧的物品信息cur_things（已经去除了5个被锁定的物品）加入到things_map中
-    things_map.insert(make_pair(id, cur_things));
+    // //当前帧的物品信息cur_things（已经去除了5个被锁定的物品）加入到things_map中
+    // things_map.insert(make_pair(id, cur_things));
     
     
 
