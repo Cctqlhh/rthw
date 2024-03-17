@@ -12,13 +12,14 @@
 #include "../include/Berth.hpp"
 #include "../include/Boat.hpp"
 #include "../include/GlobalData.hpp"
+#include "../include/Things.hpp"
 using namespace std;
 
 int main()
 {
     Init(); // 初始化
 
-    for (int zhen = 1; zhen <= 10; zhen++) // 按帧处理
+    for (int zhen = 1; zhen <= 15000; zhen++) // 按帧处理
     {
         int id = Input(); // 读取场面信息 id第几帧
         // 第一帧 目标位置为机器人初始位置
@@ -38,22 +39,15 @@ int main()
         }
 
         // 机器人指令
-        for (int i = 0; i < zhen; i++)
-        {                         // 第i个机器人的操作
-                                  // for(int i = 0; i < 2; i ++){ // 第i个机器人的操作
-                                  // 路径规划
+        for (int i = 0; i < robot_num; i++) // 第i个机器人的操作
+        {
+        // 路径规划
             robot[i].getMap(gds); // 传入初始化的地图
             // 机器人0 5对应 0 泊位
             robot[i].planPath(robot[i].berthgoal); // 修改目标，获取路径
             // robot[i].planPath({29, 147}); // 修改目标，获取路径
             robot[i].move();         // 移动
             robot[i].updateMap(gds); // 更新地图
-            // for (size_t j = 0; j < robot[i].path.size(); ++j) {
-            //     cerr << robot[i].path[j].first << "," << robot[i].path[j].second << endl;
-            //     // cerr << robot[i].path.back().first << "," << robot[i].path.back().second << endl;
-            // }
-            // cerr << robot[i].path.back().first << "," << robot[i].path.back().second << endl;
-
             if (robot[i].cmd != -1)
                 printf("move %d %d\n", i, robot[i].cmd);
             if (robot[i].goods == 0) // 机器人未携带物品
@@ -72,10 +66,6 @@ int main()
                     berth[robot[i].berthgoal_id].num_in_berth += 1; // 泊位物品数量+1
                 }
             }
-
-            // 船指令
-            //  ship id0-4 泊位id0-9 船移动到泊位
-            //  go id0-4 船运输货物到虚拟点
         }
 
         // 轮船指令
@@ -133,44 +123,6 @@ int main()
         puts("OK"); // 所有指令结束后OK
         fflush(stdout);
     }
-    for (int zhen = 11; zhen <= 15000; zhen++) // 按帧处理
-    {
-        int id = Input(); // 读取场面信息 id第几帧
-        if (zhen == 1)
-        {
-            for (int i = 0; i < robot_num; i++)
-            {
-                robot[i].goal = robot[i].pos;
-            }
-        }
-
-        for (int i = 0; i < robot_num; i++)
-        {                                          // 第i个机器人的操作
-                                                   // for(int i = 0; i < 2; i ++){ // 第i个机器人的操作
-                                                   // 路径规划
-            robot[i].getMap(gds);                  // 传入地图
-            robot[i].planPath(robot[i].berthgoal); // 修改目标，获取路径
-            // robot[i].planPath({29, 147}); // 修改目标，获取路径
-            robot[i].move();         // 移动
-            robot[i].updateMap(gds); // 更新地图
-            // for (size_t j = 0; j < robot[i].path.size(); ++j) {
-            //     cerr << robot[i].path[j].first << "," << robot[i].path[j].second << endl;
-            //     // cerr << robot[i].path.back().first << "," << robot[i].path.back().second << endl;
-            // }
-            // cerr << robot[i].path.back().first << "," << robot[i].path.back().second << endl;
-
-            if (robot[i].cmd != -1)
-                printf("move %d %d\n", i, robot[i].cmd);
-            printf("get %d\n", i);  // 指令：get 机器人id0-9  取货
-            printf("pull %d\n", i); // 指令：pull 机器人id0-9  放货
-            // 船指令
-            //  ship id0-4 泊位id0-9 船移动到泊位
-            //  go id0-4 船运输货物到虚拟点
-        }
-
-        puts("OK"); // 所有指令结束后OK
-        fflush(stdout);
-    }
-
+ 
     return 0;
 }
