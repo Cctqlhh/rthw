@@ -149,9 +149,6 @@ struct Berth
 
         things_map.erase(this->nearest_thing.frame_id);  //先将历史最近物品从map中删除
 
-        //每次都要遍历things_map，这里可以单独写一个遍历函数，减少重复代码
-        int cur_min_distance = INT_MAX;
-        Things cur_nearest_thing;
         for (auto it = things_map.begin(); it != things_map.end(); ++it)
         {
             if (it->second.dst_to_breth < cur_min_distance)
