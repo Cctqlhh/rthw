@@ -40,14 +40,15 @@ void interactWithJudger(int totalFrames) {
         for(int i = 0; i < robot_num; ++i){ // 第i个机器人的操作
         // 路径规划 
             robot[i].getMap(gds); // 传入地图
-            robot[i].planPath(); // 获取路径
+            modifyGoalOfRobot(robot[i]); // 修改目标（到达则修改）
+            robot[i].planPath(); // 路径规划方式：目标改变重新规划/根据规则调整路径
 
-            if (robot[i].plan_ready == 0) {
+            if (robot[i].plan_ready == 0) { // 未准备好，即重新规划路径，加入队列
                 unique_lock<mutex> lock(mtx);
                 computationQueue.push(i); // 需要计划路径的机器人加入队列
                 lock.unlock();
                 cv.notify_all(); 
-                robot[i].plan_ready = -1;
+                robot[i].plan_ready = -1; //准备中
             }
  
             robot[i].move();  // 移动
