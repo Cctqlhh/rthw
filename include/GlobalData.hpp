@@ -33,7 +33,7 @@ Grid gds(n, vector<int>(n, 1)); //全1地图
 // vector<Things> cur_things;
 
 bool compareByTransportTime(const Berth& a, const Berth& b);
-void modifyGoalOfRobot(Robot& rbt);
+void modifyGoalOfRobot(Robot& rbt, const int& curframe_id);
 
 void Init()
 {
@@ -152,10 +152,10 @@ bool compareByTransportTime(const Berth& a, const Berth& b) {
     return a.transport_time < b.transport_time;
 }
 
-void modifyGoalOfRobot(Robot& rbt) {
+void modifyGoalOfRobot(Robot& rbt, const int& curframe_id) {
     if(rbt.pos == rbt.goal){
         if(rbt.goal == rbt.berthgoal){ // 到达泊位，获取新的物品位置
-            berth[rbt.berthgoal_id].judge_timeout();
+            berth[rbt.berthgoal_id].judge_timeout(curframe_id);
             rbt.goal = {berth[rbt.berthgoal_id].nearest_thing.x, berth[rbt.berthgoal_id].nearest_thing.y};
             berth[rbt.berthgoal_id].update_nearest_thing_from_history(); // 更新泊位的最近物品
         }
