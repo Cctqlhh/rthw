@@ -58,11 +58,13 @@ void interactWithJudger(int totalFrames) {
             robot[i].updateMap(gds); // 更新地图
             if (robot[i].cmd != -1)
                 printf("move %d %d\n", i, robot[i].cmd);
+                
             if (robot[i].pos == robot[i].goal and robot[i].goods == 0) // 机器人未携带物品
             {
                 printf("get %d\n", i); // 指令：get 机器人id0-9  取货
             }
-            else if (robot[i].goods == 1) // 机器人携带物品
+
+            if (robot[i].goods == 1) // 机器人携带物品
             {
                 // 机器人当前位置在其对应泊位范围内
                 if (robot[i].pos.first >= berth[robot[i].berthgoal_id].x 
