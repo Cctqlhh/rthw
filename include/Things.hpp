@@ -15,4 +15,14 @@ struct Things
         this -> y = y;
         this -> value = value;
     }
+
+    bool operator==(const Things& other) const
+    {
+        return (this->frame_id == other.frame_id && this->x == other.x && this->y == other.y && this->value == other.value);
+    }
+
+    bool operator!=(const Things& other) const
+    {
+        return!(*this == other);
+    }
 };
