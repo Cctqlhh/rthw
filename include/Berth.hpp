@@ -5,14 +5,18 @@ using namespace std;
 
 struct Berth
 {
+
     int berth_id;
     int x;
     int y;
     int transport_time;
     int loading_speed;
+
+    int num_in_berth;  // 泊位内当前的物品数量
     Things nearest_thing;           // 历史最近物品
     int min_distance = INT_MAX;     // 历史最近物品的距离
     map<int, Things> things_map;    // 每个泊位的map可能会产生重复问题，导致泊位根据map更改最优目标物品时产生目标重复问题
+
 
     Berth(){}
     Berth(int x, int y, int transport_time, int loading_speed) {
