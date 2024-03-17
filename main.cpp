@@ -5,14 +5,14 @@
 #include <vector>
 
 // 算法类头文件
-#include "../include/DStarLite.hpp"
+#include "DStarLite.hpp"
 // #include "include/DStarLite.hpp"
 // 类与全局变量定义头文件
-#include "../include/Robot.hpp"
-#include "../include/Berth.hpp"
-#include "../include/Boat.hpp"
-#include "../include/GlobalData.hpp"
-#include "../include/Things.hpp"
+#include "Robot.hpp"
+#include "Berth.hpp"
+#include "Boat.hpp"
+#include "GlobalData.hpp"
+#include "Things.hpp"
 using namespace std;
 using namespace std::chrono;
 

@@ -2,5 +2,8 @@
 main.exe
 replay/
 build/
+maps/
+replayer/
 output.txt
 run_simple_demo.bat
+relese/

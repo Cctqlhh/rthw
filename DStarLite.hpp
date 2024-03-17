@@ -1,21 +1,67 @@
-/**
- * @file DstarLite.hpp
- * @author Mohammad Abdussalam (mohammadahmad01722@gmail.com)
- * @brief Implementation of D* Lite algorithm.
- * @see http://idm-lab.org/bib/abstracts/papers/aaai02b.pdf
- * @version 0.1
- * @date 2022-12-22
- */
+#ifndef __DSTARLITE_DSTARLITE_HPP__
+#define __DSTARLITE_DSTARLITE_HPP__
 
-#include "../include/DStarLite.hpp"
+#include <vector>
+#include <deque>
+#include <utility>
+#include <algorithm>
+#include <cmath>
 
-/**
- * @brief Construct a new DStarLite::DStarLite object
- *
- * @param grid
- * @param start
- * @param goal
- */
+#include "PriorityQueue.hpp"
+#include "util.hpp"
+
+#define _INF_ 0x2fffffff  // slightly less than INT32_MAX to avoid overflows
+
+typedef std::pair<int, int> State; // 位置坐标，x，y
+typedef std::pair<int, int> Key; // KEY
+typedef std::vector<vector<int>> Grid; //二维vector，地图值？
+
+class DStarLite
+{
+ public:
+  DStarLite(){}
+  DStarLite(const pair<int, int> &dim, const State &start, const State &goal);
+  DStarLite(const Grid &map, const pair<int, int> &dim, const State &start, const State &goal);
+  // vector<State> getPath() const; //获取路径，返回坐标vector
+  deque<State> getPath() const; //获取路径，返回坐标deque
+  State peekNext(const State &s) const; //返回下一个位置
+  State moveNext(); //移动到下一个位置
+  void toggleCell(const State &u); //切换位置状态
+  void blockCell(const State &u); //阻塞障碍物
+  void clearCell(const State &u); //清除障碍物
+  void updateMap(const Grid &newMap); //更新地图
+  State goal() const { return s_goal; }; //返回目标位置
+
+ private:
+  Grid _map; //存储网格状态，0为可通行，1为障碍物
+  State s_start {0, 0};    // s_start is the robot start location in the current plan 机器人起始位置
+  State s_goal {0, 0};     // s_goal is the goal location 机器人目的位置
+  State s_current {0, 0};  // s_current is the current robot location 机器人当前位置
+  Grid _g;    // The g_value is an estimate of the distance to goal distance from each location 值G
+  Grid _rhs;  // The rhs values are one-step lookahead values based on the g-values 值rhs
+  PriorityQueue<Key, State> U; //优先队列，存放要处理的节点，其KEY和位置坐标
+  int km {0}; //内部计数器，用于更新优先队列，修饰Key，改变Key的值
+  vector<State> actions {{0, 1}, {0, -1}, {-1, 0}, {1, 0}}; //移动 右左上下0123
+  // vector<State> actions {{-1, 0}, {-1, 1}, {0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}, {-1, -1}};
+
+  void computeShortestPath(); // 计算最短路径
+  void updateVertex(const State &u); // 更新节点u信息
+  int computeRHS(const State &u) const; // 计算节点u的rhs值
+  Key calculateKey(const State &s) const; // 计算节点s的Key值，用于优先队列
+  int heuristic(const State &s1, const State &s2) const; // 启发式评估节点s1到s2的成本
+  int cost(const State &s1, const State &s2) const; // 评估节点s1到s2的成本
+  vector<State> neighborStates(const State &s) const; // 返回节点s的邻居节点
+
+  int map(const State &s) const;
+  int &map(const State &s);
+  int g(const State &s) const;
+  int &g(const State &s);
+  int rhs(const State &s) const;
+  int &rhs(const State &s);
+};
+
+#include "DStarLite.hpp"
+
 DStarLite::DStarLite(const pair<int, int> &dim, const State &start, const State &goal) :
     _map {Grid(dim.first, vector<int>(dim.second, 0))}, s_start {start}, s_goal {goal},
     s_current {start}, _g {Grid(dim.first, vector<int>(dim.second, _INF_))},
@@ -38,11 +84,6 @@ DStarLite::DStarLite(const Grid &map, const pair<int, int> &dim, const State &st
   computeShortestPath();
 }
 
-/**
- * @brief Computes the shortest path to the goal by assigning g-values to states
- * of interest.
- *
- */
 void DStarLite::computeShortestPath()
 {
   while (U.size())
@@ -76,12 +117,6 @@ void DStarLite::computeShortestPath()
   }
 }
 
-/**
- * @brief Updates the RHS value of a state and insert it into the priority queue
- * if the state is inconsistent.
- *
- * @param s State
- */
 void DStarLite::updateVertex(const State &s)
 {
   if (s != s_goal) // 中间节点
@@ -99,12 +134,6 @@ void DStarLite::updateVertex(const State &s)
   }
 }
 
-/**
- * @brief Computes the RHS-value of a state.
- *
- * @param s State
- * @return int
- */
 int DStarLite::computeRHS(const State &s) const
 {
   int RHS = _INF_;
@@ -115,26 +144,12 @@ int DStarLite::computeRHS(const State &s) const
   return RHS;
 }
 
-/**
- * @brief Calculates the key for a state.
- *
- * @param s State
- * @return Key
- */
 Key DStarLite::calculateKey(const State &s) const
 {
   auto min = std::min(g(s), rhs(s));
   return {min + heuristic(s_start, s) + km, min};
 }
 
-/**
- * @brief Calculate the heuristic for two States. (i.e., the estimated distance
- * between them)
- *
- * @param s1
- * @param s2
- * @return int
- */
 int DStarLite::heuristic(const State &s1, const State &s2) const
 {
   auto diff = s1 - s2;
@@ -142,26 +157,11 @@ int DStarLite::heuristic(const State &s1, const State &s2) const
   // return std::sqrt(std::pow(diff.first, 2) + std::pow(diff.second, 2));
 }
 
-/**
- * @brief Returns the cost of moving from s1 to s2.
- *
- * @param s1
- * @param s2
- * @return int
- */
 int DStarLite::cost(const State &s1, const State &s2) const
 {
   return (map(s1) or map(s2)) ? _INF_ : 1;
 }
 
-/**
- * @brief Returns a vector of neighbors of a State. A state s2 is considered
- * a neighbor to s1 if there is an action that can be taken while in s1 to move
- * directly to s2.
- *
- * @param s
- * @return vector<State>
- */
 vector<State> DStarLite::neighborStates(const State &s) const
 {
   vector<State> neighbors;
@@ -182,12 +182,6 @@ vector<State> DStarLite::neighborStates(const State &s) const
   return neighbors;
 }
 
-/**
- * @brief Returns an ordered deque of states from start to goal representing
- * the optimal path.
- *
- * @return deque<State>
- */
 deque<State> DStarLite::getPath() const
 {
   deque<State> path = {s_current};
@@ -205,12 +199,6 @@ deque<State> DStarLite::getPath() const
   return path;
 }
 
-/**
- * @brief Peek the next state on the optimal path.
- *
- * @param s
- * @return State
- */
 State DStarLite::peekNext(const State &s) const
 {
   if (s == s_goal)
@@ -227,23 +215,12 @@ State DStarLite::peekNext(const State &s) const
   return s_min;
 }
 
-/**
- * @brief Move to the next state on the optimal path and update the internal
- * current state.
- *
- * @return State
- */
 State DStarLite::moveNext()
 {
   s_current = peekNext(s_current); // 更新当前机器人位置
   return s_current;
 }
 
-/**
- * @brief Toggle the occupancy of a cell and recompute the shortest path.
- *
- * @param s
- */
 void DStarLite::toggleCell(const State &s)
 {
   // boundary checks
@@ -268,11 +245,6 @@ void DStarLite::toggleCell(const State &s)
   computeShortestPath();
 }
 
-/**
- * @brief Adds an obstacle in a given state.
- *
- * @param u
- */
 void DStarLite::blockCell(const State &u)
 {
   if (map(u))
@@ -285,11 +257,6 @@ void DStarLite::blockCell(const State &u)
   }
 }
 
-/**
- * @brief Clears a state from obstacles.
- *
- * @param u
- */
 void DStarLite::clearCell(const State &u)
 {
   if (map(u))
@@ -302,11 +269,6 @@ void DStarLite::clearCell(const State &u)
   }
 }
 
-/**
- * @brief Update the occupied cells from a map.
- *
- * @param newMap
- */
 void DStarLite::updateMap(const Grid &newMap)
 {
   if (newMap.size() != _map.size() or newMap[0].size() != _map[0].size())
@@ -353,3 +315,5 @@ int &DStarLite::map(const State &s)
 {
   return _map[s.first][s.second];
 }
+
+#endif /* __DSTARLITE_DSTARLITE_HPP__ */
