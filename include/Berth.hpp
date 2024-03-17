@@ -5,11 +5,11 @@ using namespace std;
 
 struct Compare 
 { 
-    bool operator()(const pair<int, Things>& a, const pair<int, Things>& b) const 
+    bool operator()(const pair<int, int>& a, const pair<int, int>& b) const 
     { 
         if (a.first == b.first) 
         { 
-            return a.second.value > b.second.value; // 如果键相同，则按值排序 
+            return a.second > b.second; // 如果键相同，则按值排序 
         } 
         return a.first < b.first; 
     } 
@@ -27,7 +27,7 @@ struct Berth
     int num_in_berth;  // 泊位内当前的物品数量
     Things nearest_thing;           // 历史最近物品
     int min_distance = INT_MAX;     // 历史最近物品的距离
-    multimap<int, Things, Compare> things_map;    // 每个泊位的map可能会产生重复问题，导致泊位根据map更改最优目标物品时产生目标重复问题
+    multimap<pair<int,int>, Things, Compare> things_map;    // 每个泊位的map可能会产生重复问题，导致泊位根据map更改最优目标物品时产生目标重复问题
 
 
     Berth(){}
@@ -62,7 +62,7 @@ struct Berth
             }
 
             //当前帧最近物品存入map中
-            things_map.insert(make_pair(curframe_min_distance,curframe_nearest_thing));
+            things_map.insert(make_pair(make_pair(curframe_min_distance,curframe_nearest_thing.value),curframe_nearest_thing));
 
             update_nearest_thing_from_history();
         }
@@ -122,7 +122,7 @@ struct Berth
     // 机器人获取物品信息前，首先判断nearest_thing是否超时，
     // 如果不超时，函数不操作；
     // 如果超时，则从map容器中顺序找到不超时的第一个最好物品，更新nearest_thing。
-    void judge_timeout(int curframe_id)
+    void judge_timeout(const int& curframe_id)
     {
         if((curframe_id - nearest_thing.frame_id) >= 700)   // 物品存在了700帧以上，即还剩不到300帧，则超时
         {
