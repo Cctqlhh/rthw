@@ -122,7 +122,7 @@ struct Berth
     // 机器人获取物品信息前，首先判断nearest_thing是否超时，
     // 如果不超时，函数不操作；
     // 如果超时，则从map容器中顺序找到不超时的第一个最好物品，更新nearest_thing。
-    void judge_timeout(int curframe_id)
+    void judge_timeout(const int& curframe_id)
     {
         if((curframe_id - nearest_thing.frame_id) >= 700)   // 物品存在了700帧以上，即还剩不到300帧，则超时
         {
