@@ -27,7 +27,8 @@ struct Berth
     int num_in_berth;  // 泊位内当前的物品数量
     Things nearest_thing;           // 历史最近物品
     int min_distance = INT_MAX;     // 历史最近物品的距离
-    multimap<pair<int,int>, Things, Compare> things_map;    // 每个泊位的map可能会产生重复问题，导致泊位根据map更改最优目标物品时产生目标重复问题
+    multimap<pair<int,int>, Things, Compare> things_map;    // key为(距离，物品价值)，value为物品对象
+    // 每个泊位的map可能会产生重复问题，导致泊位根据map更改最优目标物品时产生目标重复问题
 
 
     Berth(){}
