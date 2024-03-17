@@ -151,9 +151,10 @@ struct Berth
         
         auto first_it = this->things_map.begin();
         if(first_it->second != this->nearest_thing)
-        {
+        {   
             this->nearest_thing = first_it->second;
-            this->things_map.erase(first_it);  
+            // cerr << things_map.size() << endl;
+            // this->things_map.erase(first_it);
         }
 
     }

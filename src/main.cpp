@@ -25,6 +25,7 @@ void interactWithJudger(int totalFrames) {
     for (int frame = 1; frame <= totalFrames; ++frame) {
         // cerr << "interactWithJudger" << frame << endl;
         int id = Input(); // 读取场面信息 id第几帧
+        // cerr << "input" << frame << endl;
         auto frameStartTime = high_resolution_clock::now();
         if(id == 1){
             for(int i = 0; i < robot_num; i ++){
@@ -40,7 +41,9 @@ void interactWithJudger(int totalFrames) {
         for(int i = 0; i < robot_num; ++i){ // 第i个机器人的操作
         // 路径规划 
             robot[i].getMap(gds); // 传入地图
+            // cerr << "robot" << i << endl;
             modifyGoalOfRobot(robot[i], id); // 修改目标（到达则修改）
+            
             robot[i].planPath(); // 路径规划方式：目标改变重新规划/根据规则调整路径
 
             if (robot[i].plan_ready == 0) { // 未准备好，即重新规划路径，加入队列
@@ -72,7 +75,7 @@ void interactWithJudger(int totalFrames) {
                 }
             }
         }
-
+        // cerr << "robot" << frame << endl;
         // 轮船指令
         for (size_t i = 0; i < 5; i++)
         {
@@ -125,12 +128,14 @@ void interactWithJudger(int totalFrames) {
             }
         }
 
-        auto frameEndTime = frameStartTime + milliseconds(14);
-        while (high_resolution_clock::now() < frameEndTime) {
-            // 忙等待
-        }
+        // auto frameEndTime = frameStartTime + milliseconds(14);
+        // while (high_resolution_clock::now() < frameEndTime) {
+        //     // 忙等待
+        // }
         // 发送“OK”
+        
         puts("OK"); // 所有指令结束后OK
+        // cerr << "OK" << id << endl;
         fflush(stdout);
         
     }
@@ -166,7 +171,7 @@ void pathPlanning() {
 int main() {
     const int totalFrames = 15000;
     Init(); //初始化
-    cerr << "Init" << endl;
+    // cerr << "Init" << endl;
     thread judgerThread(interactWithJudger, totalFrames);
     thread planningThread(pathPlanning);
 

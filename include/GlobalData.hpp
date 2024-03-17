@@ -126,6 +126,7 @@ int Input()
     for(int i = 0; i < 5; i ++)
     {
         berth[boat[i].goal_berth].choose_nearest_thing(cur_things);
+        // cerr << berth[boat[i].goal_berth].things_map.size() << endl;
     }
 
     // //当前帧的物品信息cur_things（已经去除了5个被锁定的物品）加入到things_map中
@@ -157,7 +158,10 @@ void modifyGoalOfRobot(Robot& rbt, const int& curframe_id) {
         if(rbt.goal == rbt.berthgoal){ // 到达泊位，获取新的物品位置
             berth[rbt.berthgoal_id].judge_timeout(curframe_id);
             rbt.goal = {berth[rbt.berthgoal_id].nearest_thing.x, berth[rbt.berthgoal_id].nearest_thing.y};
+            berth[rbt.berthgoal_id].things_map.erase(berth[rbt.berthgoal_id].things_map.begin()); // 更新泊位的最近物品
+            // cerr << "update_nearest_thing_from_history" << endl;
             berth[rbt.berthgoal_id].update_nearest_thing_from_history(); // 更新泊位的最近物品
+            // cerr << "update_nearest_thing_from_history over " << endl;
         }
         else{ // 到达物品，返回泊位
             rbt.goal = rbt.berthgoal;
