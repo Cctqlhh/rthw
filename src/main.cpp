@@ -128,10 +128,10 @@ void interactWithJudger(int totalFrames) {
             }
         }
 
-        // auto frameEndTime = frameStartTime + milliseconds(14);
-        // while (high_resolution_clock::now() < frameEndTime) {
-        //     // 忙等待
-        // }
+        auto frameEndTime = frameStartTime + milliseconds(14);
+        while (high_resolution_clock::now() < frameEndTime) {
+            // 忙等待
+        }
         // 发送“OK”
         
         puts("OK"); // 所有指令结束后OK
