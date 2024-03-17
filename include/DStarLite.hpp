@@ -39,6 +39,7 @@ class DStarLite
   void blockCell(const State &u); //阻塞障碍物
   void clearCell(const State &u); //清除障碍物
   void updateMap(const Grid &newMap); //更新地图
+  State goal() const { return s_goal; }; //返回目标位置
 
  private:
   Grid _map; //存储网格状态，0为可通行，1为障碍物

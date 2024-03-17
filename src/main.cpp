@@ -14,39 +14,43 @@
 #include "../include/GlobalData.hpp"
 #include "../include/Things.hpp"
 using namespace std;
+using namespace std::chrono;
 
-int main()
-{
-    Init(); // 初始化
+mutex mtx;
+condition_variable cv;
+queue<int> computationQueue; // 需要计算路径的机器人队列
+bool finished = false; // 标记是否所有帧处理完成
 
-    for (int zhen = 1; zhen <= 15000; zhen++) // 按帧处理
-    {
+void interactWithJudger(int totalFrames) {
+    for (int frame = 1; frame <= totalFrames; ++frame) {
+        // cerr << "interactWithJudger" << frame << endl;
         int id = Input(); // 读取场面信息 id第几帧
-        // 第一帧 目标位置为机器人初始位置
-        if (zhen == 1)
-        {
-            for (int i = 0; i < robot_num; i++)
-            {
-                robot[i].goal = robot[i].pos; // goal 不是有参构造赋值的，而是通过赋值实现
+        auto frameStartTime = high_resolution_clock::now();
+        if(id == 1){
+            for(int i = 0; i < robot_num; i ++){
+                robot[i].goal = robot[i].berthgoal;
             }
-
-            // 在第一帧让所有5个轮船到离虚拟点最近的前五个泊位
-            for (int i = 0; i < 5; i++)
-            {
+            for (int i = 0; i < 5; i++){
                 boat[i].goal = boat[i].goal_berth;     // 每艘船的目标泊位
                 printf("ship %d %d\n", i, boat[i].goal);
             }
         }
+        
+    // 机器人操作
+        for(int i = 0; i < robot_num; ++i){ // 第i个机器人的操作
+        // 路径规划 
+            robot[i].getMap(gds); // 传入地图
+            robot[i].planPath(); // 获取路径
 
-        // 机器人指令
-        for (int i = 0; i < robot_num; i++) // 第i个机器人的操作
-        {
-        // 路径规划
-            robot[i].getMap(gds); // 传入初始化的地图
-            // 机器人0 5对应 0 泊位
-            robot[i].planPath(robot[i].berthgoal); // 修改目标，获取路径
-            // robot[i].planPath({29, 147}); // 修改目标，获取路径
-            robot[i].move();         // 移动
+            if (robot[i].plan_ready == 0) {
+                unique_lock<mutex> lock(mtx);
+                computationQueue.push(i); // 需要计划路径的机器人加入队列
+                lock.unlock();
+                cv.notify_all(); 
+                robot[i].plan_ready = -1;
+            }
+ 
+            robot[i].move();  // 移动
             robot[i].updateMap(gds); // 更新地图
             if (robot[i].cmd != -1)
                 printf("move %d %d\n", i, robot[i].cmd);
@@ -92,7 +96,7 @@ int main()
                         berth[boat[i].goal_berth].num_in_berth -= berth[boat[i].goal_berth].loading_speed;
                     }
                     // 船最后一次去虚拟点的时候如果没有装满物品也需要出发并且能够在最后到达虚拟点，避免浪费最后装的物品
-                    if (15000 - zhen <= berth[boat[i].goal_berth].transport_time + 10)  //可修改
+                    if (15000 - frame <= berth[boat[i].goal_berth].transport_time + 10)  //可修改
                     {
                         printf("go %d\n", i);
                         continue; // 船最后一次去虚拟点，且没有装满物品，不再给该船下达指令
@@ -120,9 +124,53 @@ int main()
             }
         }
 
+        auto frameEndTime = frameStartTime + milliseconds(14);
+        while (high_resolution_clock::now() < frameEndTime) {
+            // 忙等待
+        }
+        // 发送“OK”
         puts("OK"); // 所有指令结束后OK
         fflush(stdout);
+        
     }
- 
+    // 标记完成，通知路径规划线程
+    lock_guard<mutex> lock(mtx);
+    finished = true;
+    cv.notify_all();
+    
+}
+
+void pathPlanning() {
+    while (true) {
+        std::unique_lock<std::mutex> lock(mtx); // 加锁
+        cv.wait(lock, [] { return !computationQueue.empty() || finished; });
+        if (finished) {
+            lock.unlock(); // 解锁
+            break; // 所有帧处理完成,退出线程
+        }
+
+        while (!computationQueue.empty()) {
+            int robotId = computationQueue.front();
+            computationQueue.pop();
+
+            lock.unlock();
+
+            robot[robotId].rePlan();
+
+            lock.lock();
+        }
+    }
+}
+
+int main() {
+    const int totalFrames = 15000;
+    Init(); //初始化
+    cerr << "Init" << endl;
+    thread judgerThread(interactWithJudger, totalFrames);
+    thread planningThread(pathPlanning);
+
+    judgerThread.join();
+    planningThread.join();
+
     return 0;
 }
