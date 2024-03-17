@@ -3,7 +3,7 @@
 
 using namespace std;
 
-typedef std::pair<State, int> Things; // 货物State（x, y）， 值value
+// typedef std::pair<State, int> Things; // 货物State（x, y）， 值value
 
 struct Robot
 {
@@ -25,7 +25,7 @@ struct Robot
     deque<State> path;
     Grid map;
     State berthgoal;    // 机器人的目标泊位
-    deque<vector<Things>> things; // 货物队列
+    // deque<vector<Things>> things; // 货物队列
 
 
     // void wat(){
@@ -112,44 +112,44 @@ struct Robot
         gds[pos.first][pos.second] = 1;
     }
 
-    void chooseThings(const deque<vector<Things>> &global_things){  // global_things 是最多20帧的全部物品
-        // 计算开始复制的位置。确保不会超出范围。   计算后5个帧的物品信息
-        auto start = global_things.size() > 5 ? global_things.end() - 5 : global_things.begin();
+    // void chooseThings(const deque<vector<Things>> &global_things){  // global_things 是最多20帧的全部物品
+    //     // 计算开始复制的位置。确保不会超出范围。   计算后5个帧的物品信息
+    //     auto start = global_things.size() > 5 ? global_things.end() - 5 : global_things.begin();
 
-        // 创建一个新的deque，包含最后五个元素  行为帧数 列为帧的第几个物品
-        things = deque<vector<Things>>(start, global_things.end());
-        // 包含后五帧物品与机器人当前位置的曼哈顿距离   things 和 distance 两两对应
-        deque<vector<int>> distance;
-        // 遍历包含后五帧物品信息的新deque
-        for(auto i = things.begin(); i != things.end(); i++){
-            vector<int> temp;
-            //遍历vector中的元素
-            for(auto j = i->begin(); j != i->end(); j++){
-                temp.push_back(manhattanDistance(pos.first, pos.second, j->first.first, j->first.second));
-            }
-            distance.push_back(temp);
-        }
-        int minDistance = std::numeric_limits<int>::max();
-        size_t minDequeIndex = 0;
-        size_t minVectorIndex = 0;
+    //     // 创建一个新的deque，包含最后五个元素  行为帧数 列为帧的第几个物品
+    //     things = deque<vector<Things>>(start, global_things.end());
+    //     // 包含后五帧物品与机器人当前位置的曼哈顿距离   things 和 distance 两两对应
+    //     deque<vector<int>> distance;
+    //     // 遍历包含后五帧物品信息的新deque
+    //     for(auto i = things.begin(); i != things.end(); i++){
+    //         vector<int> temp;
+    //         //遍历vector中的元素
+    //         for(auto j = i->begin(); j != i->end(); j++){
+    //             temp.push_back(manhattanDistance(pos.first, pos.second, j->first.first, j->first.second));
+    //         }
+    //         distance.push_back(temp);
+    //     }
+    //     int minDistance = std::numeric_limits<int>::max();
+    //     size_t minDequeIndex = 0;
+    //     size_t minVectorIndex = 0;
 
-        // 遍历deque    在后五帧物品中找出相对于机器人当前位置最近的物品
-        for (size_t i = 0; i < distance.size(); ++i) {
-            // 遍历vector
-            for (size_t j = 0; j < distance[i].size(); ++j) {
-                if (distance[i][j] < minDistance) {
-                    minDistance = distance[i][j];
-                    minDequeIndex = i;      // i为相对于当前帧的帧序号 
-                    minVectorIndex = j;     // j为该帧的第几个物品
-                }
-            }
-        }
+    //     // 遍历deque    在后五帧物品中找出相对于机器人当前位置最近的物品
+    //     for (size_t i = 0; i < distance.size(); ++i) {
+    //         // 遍历vector
+    //         for (size_t j = 0; j < distance[i].size(); ++j) {
+    //             if (distance[i][j] < minDistance) {
+    //                 minDistance = distance[i][j];
+    //                 minDequeIndex = i;      // i为相对于当前帧的帧序号 
+    //                 minVectorIndex = j;     // j为该帧的第几个物品
+    //             }
+    //         }
+    //     }
 
-        // things[minDequeIndex][minVectorIndex];  //返回Things类型
+    //     // things[minDequeIndex][minVectorIndex];  //返回Things类型
 
 
 
-    }
+    // }
 
     int manhattanDistance(int x1, int y1, int x2, int y2) {
         return std::abs(x1 - x2) + std::abs(y1 - y2);
