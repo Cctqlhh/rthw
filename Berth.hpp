@@ -6,17 +6,29 @@ int manhattanDistance(const int& x1, const int& y1, const int& x2, const int& y2
     return abs(x1 - x2) + abs(y1 - y2);
 }
 
-struct Compare 
-{ 
+// struct Compare 
+// { 
+//     bool operator()(const pair<int, int>& a, const pair<int, int>& b) const 
+//     { 
+//         if (a.first == b.first) 
+//         { 
+//             return a.second > b.second; // 如果键相同，则按值排序 
+//         } 
+//         return a.first < b.first; 
+//     } 
+// };
+
+struct Compare {
+    // 根据 价值/距离 比例排序 价值越高，距离越小，比值越高，物品越优
     bool operator()(const pair<int, int>& a, const pair<int, int>& b) const 
-    { 
-        if (a.first == b.first) 
-        { 
-            return a.second > b.second; // 如果键相同，则按值排序 
-        } 
-        return a.first < b.first; 
-    } 
+    {
+        double ratioA = static_cast<double>(a.second) / a.first;
+        double ratioB = static_cast<double>(b.second) / b.first;
+        
+        return ratioA > ratioB;
+    }
 };
+
 
 struct Berth
 {
@@ -64,6 +76,7 @@ struct Berth
                 //     curframe_nearest_thing = *it;
                 //     curframe_it = it;
                 // }
+                // 每个泊位存储了每一帧所有的物品信息
                 things_map.insert(make_pair(make_pair(distance, it->value), *it));
             }
 
