@@ -64,6 +64,7 @@ struct Berth
                 //     curframe_nearest_thing = *it;
                 //     curframe_it = it;
                 // }
+                // 每个泊位存储了每一帧所有的物品信息
                 things_map.insert(make_pair(make_pair(distance, it->value), *it));
             }
 
