@@ -73,17 +73,18 @@ struct Robot
                 wait += 1; // 下一步有机器人障碍,且还未等待，等待次数加一，不调整路径
             }
             else if(map[next.first][next.second] == 1 and wait > 0){
-//////        
-            auto start1 = high_resolution_clock::now();
-//////
+// //////        
+//             auto start1 = high_resolution_clock::now();
+// //////
                 adjustPath(); // 等待一次以上,且有机器人障碍物，调整路径
-//////
-            auto end = high_resolution_clock::now();
-            // 计算运行时间
-            auto duration = duration_cast<std::chrono::milliseconds>(end - start1);
-            // 输出运行时间
-            std::cerr << "Program ran for " << duration.count() << " ms." << std::endl;
-//////
+////////          
+//             auto end = high_resolution_clock::now();
+//             // 计算运行时间
+//             auto duration = duration_cast<std::chrono::milliseconds>(end - start1);
+//             // 输出运行时间
+//             std::cerr << "Program ran for " << duration.count() << " ms." << std::endl;
+// //////
+                next = dsl.peekNext(pos);
                 wait = 0; // 等待清零
                     //好像不是/// 碰撞原因： 等待一次后调整路径，等待清零，但没有判断新的路径上下一步有没有机器人障碍。
             }
@@ -126,14 +127,17 @@ struct Robot
         if(plan_ready == 1){
             planPath();
             if(plan_ready == 1){
-                if(wait > 0) // 等待
+                if(wait > 0) {// 等待
                     cmd = -1;
+                    // cerr << "wait" << endl;
+                }
                 else{ // 不等待
                 // 如果重新规划时候，在前面判断机器人障碍时候未准备好，move前准备好了，
                 // 则会进行move，但此时并未判断新的路径前方是否有机器人障碍，
                 // 因为路径规划时输入的map可能是上一帧的。
                     // State next = dsl.moveNext();
                     // next = dsl.peekNext(pos);
+                    // cerr << pos.first << "," << pos.second << " to " << next.first << "," << next.second << endl;
                     State change = next - pos;
                     if (change.first == 1 and change.second == 0){ //下
                         cmd = 3;
@@ -152,11 +156,11 @@ struct Robot
                         dsl.updateSCurrent(next);
                     }
                     else{
-                        cerr << "pos == goal wait why" << endl;
-                        cerr << pos.first << "," << pos.second << 
-                        " " << goal.first << "," << goal.second <<
-                        " " << next.first << "," << next.second << " " << endl;
-                        cerr << dsl.goal().first << "," << dsl.goal().second << endl;
+                        // cerr << "pos == goal wait why" << endl;
+                        // cerr << pos.first << "," << pos.second << 
+                        // " " << goal.first << "," << goal.second <<
+                        // " " << next.first << "," << next.second << " " << endl;
+                        // cerr << dsl.goal().first << "," << dsl.goal().second << endl;
                         stop_process();
                         cmd = -1; // 不移动
                     }
@@ -164,7 +168,10 @@ struct Robot
                     // path = dsl.getPath(); // 不需要具体路径
                 }
             }
-            else cmd = -1;
+            else {
+                cmd = -1;
+                // cerr << "need replan" << endl;
+            }
         }
         else cmd = -1; // 规划未完成，指令为不移动
     }
