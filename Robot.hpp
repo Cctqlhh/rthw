@@ -158,7 +158,7 @@ struct Robot
                         " " << next.first << "," << next.second << " " << endl;
                         cerr << dsl.goal().first << "," << dsl.goal().second << endl;
                         stop_process();
-                        // cmd = -1; // 不移动
+                        cmd = -1; // 不移动
                     }
                     pos = next;
                     // path = dsl.getPath(); // 不需要具体路径
