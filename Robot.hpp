@@ -56,11 +56,11 @@ struct Robot
                 else if(map[next.first][next.second] == 1 and wait > 0){
                     adjustPath(); // 等待一次以上,且有机器人障碍物，调整路径
                     wait = 0; // 等待清零
+                     //好像不是/// 碰撞原因： 等待一次后调整路径，等待清零，但没有判断新的路径上下一步有没有机器人障碍。
                 }
                 else if(map[next.first][next.second] == 0 and wait > 0){
                     wait = 0; // 没有障碍物，且等待了，等待次数清零，不调整路径。
                 }
-
             }
             else{ // 目标改变，重新规划路径 / 目标未变，但已到达目标地点，重新规划路径（不存在这种情况，要在其他地方维护goal，即改变目标时goal要改变）
                 // 加入计算队列
@@ -90,6 +90,9 @@ struct Robot
             if(wait > 0) // 等待
                 cmd = -1;
             else{ // 不等待
+            // 如果重新规划时候，在前面判断机器人障碍时候未准备好，move前准备好了，
+            // 则会进行move，但此时并未判断新的路径前方是否有机器人障碍，
+            // 因为路径规划时输入的map可能是上一帧的。
                 State next = dsl.moveNext();
                 State change = next - pos;
                 if (change.first == 1 and change.second == 0) //下
@@ -115,8 +118,6 @@ struct Robot
         gds[pos.first][pos.second] = 1;
     }
 
-    int manhattanDistance(int x1, int y1, int x2, int y2) {
-        return std::abs(x1 - x2) + std::abs(y1 - y2);
-    }
+
 
 };

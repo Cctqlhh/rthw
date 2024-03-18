@@ -155,13 +155,19 @@ bool compareByTransportTime(const Berth& a, const Berth& b) {
 
 void modifyGoalOfRobot(Robot& rbt, const int& curframe_id) {
     if(rbt.pos == rbt.goal){
-        if(rbt.goal == rbt.berthgoal){ // 到达泊位，获取新的物品位置
-            berth[rbt.berthgoal_id].judge_timeout(curframe_id);
+        // if(rbt.goal == rbt.berthgoal){ // 到达泊位，获取新的物品位置
+        if (rbt.goal.first >= berth[rbt.berthgoal_id].x 
+            and rbt.goal.first <= berth[rbt.berthgoal_id].x + 3 
+            and rbt.goal.second >= berth[rbt.berthgoal_id].y 
+            and rbt.goal.second <= berth[rbt.berthgoal_id].y + 3){
+
+            berth[rbt.berthgoal_id].judge_occupy_timeout(curframe_id);
+
             rbt.goal = {berth[rbt.berthgoal_id].nearest_thing.x, berth[rbt.berthgoal_id].nearest_thing.y};
+            
+            berth[rbt.berthgoal_id].things_map.begin()->second.to_robot = 1; // 物品设定为已占用
             berth[rbt.berthgoal_id].things_map.erase(berth[rbt.berthgoal_id].things_map.begin()); // 更新泊位的最近物品
-            // cerr << "update_nearest_thing_from_history" << endl;
             berth[rbt.berthgoal_id].update_nearest_thing_from_history(); // 更新泊位的最近物品
-            // cerr << "update_nearest_thing_from_history over " << endl;
         }
         else{ // 到达物品，返回泊位
             rbt.goal = rbt.berthgoal;
@@ -169,5 +175,4 @@ void modifyGoalOfRobot(Robot& rbt, const int& curframe_id) {
     }
     //未到达泊位，不进行操作
 }
-
 

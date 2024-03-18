@@ -58,20 +58,23 @@ void interactWithJudger(int totalFrames) {
             robot[i].updateMap(gds); // 更新地图
             if (robot[i].cmd != -1)
                 printf("move %d %d\n", i, robot[i].cmd);
-            if (robot[i].goods == 0) // 机器人未携带物品
+                
+            if (robot[i].pos == robot[i].goal and robot[i].goods == 0) // 机器人未携带物品
             {
                 printf("get %d\n", i); // 指令：get 机器人id0-9  取货
             }
-            else if (robot[i].goods == 1) // 机器人携带物品
+
+            if (robot[i].goods == 1) // 机器人携带物品
             {
                 // 机器人当前位置在其对应泊位范围内
                 if (robot[i].pos.first >= berth[robot[i].berthgoal_id].x 
-                and robot[i].pos.first <= berth[robot[i].berthgoal_id].x + 3 
-                and robot[i].pos.second >= berth[robot[i].berthgoal_id].y 
-                and robot[i].pos.second <= berth[robot[i].berthgoal_id].y + 3)
+                    and robot[i].pos.first <= berth[robot[i].berthgoal_id].x + 3 
+                    and robot[i].pos.second >= berth[robot[i].berthgoal_id].y 
+                    and robot[i].pos.second <= berth[robot[i].berthgoal_id].y + 3)
                 {
                     printf("pull %d\n", i);                      // 指令：pull 机器人id0-9  放货  每个机器人在自己对应泊位放货
                     berth[robot[i].berthgoal_id].num_in_berth += 1; // 泊位物品数量+1
+                    robot[i].goal = robot[i].pos;
                 }
             }
         }
