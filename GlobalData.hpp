@@ -170,8 +170,8 @@ void modifyGoalOfRobot(Robot& rbt, const int& curframe_id) {
             berth[rbt.berthgoal_id].things_map.begin()->second.to_robot = 1; // 物品设定为已占用
             berth[rbt.berthgoal_id].things_map.erase(berth[rbt.berthgoal_id].things_map.begin()); // 更新泊位的最近物品
             berth[rbt.berthgoal_id].update_nearest_thing_from_history(); // 更新泊位的最近物品
-            cerr << "pos " << rbt.pos.first << "," << rbt.pos.second << endl;
-            cerr << "new goal " << rbt.goal.first << "," << rbt.goal.second << endl;
+            // cerr << "pos " << rbt.pos.first << "," << rbt.pos.second << endl;
+            // cerr << "new goal " << rbt.goal.first << "," << rbt.goal.second << endl;
         }
         else if(rbt.stop_flag == 2){ // 第二种停止情况
 
@@ -187,21 +187,21 @@ void modifyGoalOfRobot(Robot& rbt, const int& curframe_id) {
 }
 
 State NearestBerthOfRobotNow(const Robot& rbt){
-    int min_dis = _INF_;
-    State min_state;
-    for (size_t i = 0; i < 5; i++)
-    {
-        Berth tempBerth = berth_order[i];
-        if(rbt.berthgoal_id != tempBerth.berth_id){
-            int temp_dis = manhattanDistance(rbt.pos.first, rbt.pos.second, tempBerth.x, tempBerth.y);
-            if(temp_dis < min_dis){
-                min_dis = temp_dis;
-                min_state = {tempBerth.x, tempBerth.y};
-            }
-        }
-    }
+    // int min_dis = _INF_;
+    // State min_state;
+    // for (size_t i = 0; i < 5; i++)
+    // {
+    //     Berth tempBerth = berth_order[i];
+    //     if(rbt.berthgoal_id != tempBerth.berth_id){
+    //         int temp_dis = manhattanDistance(rbt.pos.first, rbt.pos.second, tempBerth.x, tempBerth.y);
+    //         if(temp_dis < min_dis){
+    //             min_dis = temp_dis;
+    //             min_state = {tempBerth.x, tempBerth.y};
+    //         }
+    //     }
+    // }
     // rbt.berthgoal_id = min_id;
-    return min_state;
-       
-    
+    // return min_state;
+    Berth temp_b = berth_order[rand()%5];
+    return {temp_b.x, temp_b.y}; 
 }

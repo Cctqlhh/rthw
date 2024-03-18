@@ -23,8 +23,8 @@ bool finished = false; // 标记是否所有帧处理完成
 
 void interactWithJudger(int totalFrames) {
     for (int frame = 1; frame <= totalFrames; ++frame) {
-        // cerr << "interactWithJudger" << frame << endl;
         int id = Input(); // 读取场面信息 id第几帧
+        // cerr << "interactWithJudger" << frame << endl;
         // cerr << "input" << frame << endl;
         auto frameStartTime = high_resolution_clock::now();
         if(id == 1){
@@ -39,22 +39,20 @@ void interactWithJudger(int totalFrames) {
         
     // 机器人操作
         for(int i = 0; i < robot_num; ++i){ // 第i个机器人的操作
-            cerr << "robot" << i << endl;
-            cerr << robot[i].status << endl;
+            // cerr << "robot " << i << endl;
+            // cerr << robot[i].status << endl;
         // 路径规划 
+
             if(frame != 1 and robot[i].plan_ready == 0)
                 continue;
 
             robot[i].getMap(gds); // 传入地图
-
-            // cerr << "robot" << i << endl;
             modifyGoalOfRobot(robot[i], id); // 修改目标（到达则修改）
             // 如果更改会导致在move planPath 中，使 plan_ready变为0
             // robot[i].planPath(); // 路径规划方式：目标改变重新规划/根据规则调整路径
+
             robot[i].move();  // 移动,planPath已放到move中
-
             robot[i].updateMap(gds); // 更新地图
-
 
             if (robot[i].plan_ready == 0) { // 未准备好，即重新规划路径，加入队列
                 unique_lock<mutex> lock(mtx);
@@ -88,6 +86,8 @@ void interactWithJudger(int totalFrames) {
             }
         }
         // cerr << "robot" << frame << endl;
+
+
         // 轮船指令
         for (size_t i = 0; i < 5; i++)
         {
@@ -173,9 +173,8 @@ void pathPlanning() {
 
             lock.unlock();
             //重新规划时需要获取最新地图
-            robot[robotId].getMap(gds);
+            robot[robotId].getMap_cst(gds);
             robot[robotId].rePlan();
-            robot[robotId].updateMap(gds);
             lock.lock();
         }
     }

@@ -1,7 +1,7 @@
 #pragma once
 #include "DStarLite.hpp"
 using namespace std;
-
+using namespace std::chrono;
 // typedef std::pair<State, int> Things; // 货物State（x, y）， 值value
 
 struct Robot
@@ -44,6 +44,12 @@ struct Robot
         map = gds;
     }
 
+    void getMap_cst(const Grid &gds)
+    {
+        map = gds;
+        map[pos.first][pos.second] = 0; //将机器人当前位置在地图上设置为0
+    }
+
     void updateMap(Grid &gds)
     {
         gds[pos.first][pos.second] = 1;
@@ -52,25 +58,39 @@ struct Robot
     void planPath(){
         // 需要等待规划完成
         // if(plan_ready == 1){ // 规划完了
-        
+
         if(goal == dsl.goal() and pos != dsl.goal()){ 
             // 目标地点未变，且未到达目标地点，不用重新规划，可移动，判断机器人障碍
             // if(stop_flag == 2){
             //     next = dsl.peekNext_ez(pos);
             // }
             // else 
+
             next = dsl.peekNext(pos); // 下一步位置
+
+
             if(map[next.first][next.second] == 1 and wait == 0){
                 wait += 1; // 下一步有机器人障碍,且还未等待，等待次数加一，不调整路径
             }
             else if(map[next.first][next.second] == 1 and wait > 0){
+//////        
+            auto start1 = high_resolution_clock::now();
+//////
                 adjustPath(); // 等待一次以上,且有机器人障碍物，调整路径
+//////
+            auto end = high_resolution_clock::now();
+            // 计算运行时间
+            auto duration = duration_cast<std::chrono::milliseconds>(end - start1);
+            // 输出运行时间
+            std::cerr << "Program ran for " << duration.count() << " ms." << std::endl;
+//////
                 wait = 0; // 等待清零
                     //好像不是/// 碰撞原因： 等待一次后调整路径，等待清零，但没有判断新的路径上下一步有没有机器人障碍。
             }
             else if(map[next.first][next.second] == 0 and wait > 0){
                 wait = 0; // 没有障碍物，且等待了，等待次数清零，不调整路径。
             }
+
         }
         else{ // 目标改变，重新规划路径 / 目标未变，但已到达目标地点，重新规划路径（不存在这种情况，要在其他地方维护goal，即改变目标时goal要改变）
             // 加入计算队列
@@ -85,6 +105,9 @@ struct Robot
 
     void rePlan() // goal为新目标，重新规划路径
     {
+        if(map[goal.first][goal.second] == 1){
+            map[goal.first][goal.second] = 0;
+        }
         dsl = DStarLite(map, {200, 200}, pos, goal);
         plan_ready = 1;
     }
@@ -144,7 +167,6 @@ struct Robot
             else cmd = -1;
         }
         else cmd = -1; // 规划未完成，指令为不移动
-        
     }
 
     void stop_process(){
