@@ -1,6 +1,5 @@
 #pragma once
-#include"DStarLite.hpp"
-
+#include "DStarLite.hpp"
 using namespace std;
 
 // typedef std::pair<State, int> Things; // 货物State（x, y）， 值value
@@ -16,8 +15,10 @@ struct Robot
     int status = 1; // 1正常，0恢复中
     // int mbx, mby;
     State goal; //目标
+    State next; // 下一位置
     int wait = 0; // 因障碍等待的次数，达到1则重新规划路线，否则等待，并+1
     int plan_ready = 0; // 0未准备好，1准备好，-1正在规划
+    int stop_flag = 0; // 0未因莫名原因停止，1为第一种情况，2为第二种情况
 
     Robot() {}
     Robot(int startX, int startY):
@@ -26,7 +27,7 @@ struct Robot
     DStarLite dsl;
     deque<State> path;
     Grid map;
-  
+
     int berthgoal_id;   // 机器人的目标泊位id
     State berthgoal;    // 机器人的目标泊位
 
@@ -43,31 +44,40 @@ struct Robot
         map = gds;
     }
 
+    void updateMap(Grid &gds)
+    {
+        gds[pos.first][pos.second] = 1;
+    }
+
     void planPath(){
         // 需要等待规划完成
-        if(plan_ready == 1){ // 规划完了
-            if(goal == dsl.goal() and pos != dsl.goal()){ 
-                // 目标地点未变，且未到达目标地点，不用重新规划，可移动，判断机器人障碍
-                
-                State next = dsl.peekNext(pos); // 下一步位置
-                if(map[next.first][next.second] == 1 and wait == 0){
-                    wait += 1; // 下一步有机器人障碍,且还未等待，等待次数加一，不调整路径
-                }
-                else if(map[next.first][next.second] == 1 and wait > 0){
-                    adjustPath(); // 等待一次以上,且有机器人障碍物，调整路径
-                    wait = 0; // 等待清零
-                     //好像不是/// 碰撞原因： 等待一次后调整路径，等待清零，但没有判断新的路径上下一步有没有机器人障碍。
-                }
-                else if(map[next.first][next.second] == 0 and wait > 0){
-                    wait = 0; // 没有障碍物，且等待了，等待次数清零，不调整路径。
-                }
+        // if(plan_ready == 1){ // 规划完了
+        
+        if(goal == dsl.goal() and pos != dsl.goal()){ 
+            // 目标地点未变，且未到达目标地点，不用重新规划，可移动，判断机器人障碍
+            // if(stop_flag == 2){
+            //     next = dsl.peekNext_ez(pos);
+            // }
+            // else 
+            next = dsl.peekNext(pos); // 下一步位置
+            if(map[next.first][next.second] == 1 and wait == 0){
+                wait += 1; // 下一步有机器人障碍,且还未等待，等待次数加一，不调整路径
             }
-            else{ // 目标改变，重新规划路径 / 目标未变，但已到达目标地点，重新规划路径（不存在这种情况，要在其他地方维护goal，即改变目标时goal要改变）
-                // 加入计算队列
-                plan_ready = 0; // 重新规划路径，未准备好
+            else if(map[next.first][next.second] == 1 and wait > 0){
+                adjustPath(); // 等待一次以上,且有机器人障碍物，调整路径
                 wait = 0; // 等待清零
+                    //好像不是/// 碰撞原因： 等待一次后调整路径，等待清零，但没有判断新的路径上下一步有没有机器人障碍。
+            }
+            else if(map[next.first][next.second] == 0 and wait > 0){
+                wait = 0; // 没有障碍物，且等待了，等待次数清零，不调整路径。
             }
         }
+        else{ // 目标改变，重新规划路径 / 目标未变，但已到达目标地点，重新规划路径（不存在这种情况，要在其他地方维护goal，即改变目标时goal要改变）
+            // 加入计算队列
+            plan_ready = 0; // 重新规划路径，未准备好
+            wait = 0; // 等待清零
+        }
+        // }
         // 规划未完成，则不做操作
 
         
@@ -86,38 +96,69 @@ struct Robot
 
     void move()
     {   
+        // 若没规划完，则不移动
+        // 若规划完 ready，进入planPath判断是否重新规划路线
+            // 若不重新规划，仍然ready，则根据规则移动
+            // 若重新规划，！ready，则不移动等待规划完
         if(plan_ready == 1){
-            if(wait > 0) // 等待
-                cmd = -1;
-            else{ // 不等待
-            // 如果重新规划时候，在前面判断机器人障碍时候未准备好，move前准备好了，
-            // 则会进行move，但此时并未判断新的路径前方是否有机器人障碍，
-            // 因为路径规划时输入的map可能是上一帧的。
-                State next = dsl.moveNext();
-                State change = next - pos;
-                if (change.first == 1 and change.second == 0) //下
-                    cmd = 3;
-                else if (change.first == -1 and change.second == 0) //上
-                    cmd = 2;
-                else if (change.first == 0 and change.second == 1) //右
-                    cmd = 0;
-                else if (change.first == 0 and change.second == -1) //左
-                    cmd = 1;
-                else 
-                    cmd = -1; // 不移动
-                pos = next;
-                // path = dsl.getPath(); // 不需要具体路径
+            planPath();
+            if(plan_ready == 1){
+                if(wait > 0) // 等待
+                    cmd = -1;
+                else{ // 不等待
+                // 如果重新规划时候，在前面判断机器人障碍时候未准备好，move前准备好了，
+                // 则会进行move，但此时并未判断新的路径前方是否有机器人障碍，
+                // 因为路径规划时输入的map可能是上一帧的。
+                    // State next = dsl.moveNext();
+                    // next = dsl.peekNext(pos);
+                    State change = next - pos;
+                    if (change.first == 1 and change.second == 0){ //下
+                        cmd = 3;
+                        dsl.updateSCurrent(next);
+                    } 
+                    else if (change.first == -1 and change.second == 0){ //上
+                        cmd = 2;
+                        dsl.updateSCurrent(next);
+                    }
+                    else if (change.first == 0 and change.second == 1){ //右
+                        cmd = 0;
+                        dsl.updateSCurrent(next);
+                    }
+                    else if (change.first == 0 and change.second == -1){ //左
+                        cmd = 1;
+                        dsl.updateSCurrent(next);
+                    }
+                    else{
+                        cerr << "pos == goal wait why" << endl;
+                        cerr << pos.first << "," << pos.second << 
+                        " " << goal.first << "," << goal.second <<
+                        " " << next.first << "," << next.second << " " << endl;
+                        cerr << dsl.goal().first << "," << dsl.goal().second << endl;
+                        stop_process();
+                        // cmd = -1; // 不移动
+                    }
+                    pos = next;
+                    // path = dsl.getPath(); // 不需要具体路径
+                }
             }
+            else cmd = -1;
         }
         else cmd = -1; // 规划未完成，指令为不移动
         
     }
 
-    void updateMap(Grid &gds)
-    {
-        gds[pos.first][pos.second] = 1;
+    void stop_process(){
+        // 如果停在泊位内，或正在前往目标物品(未携带物品)，则改变物品目标，重新规划
+        if (pos.first >= berthgoal.first
+            and pos.first <= berthgoal.first + 3 
+            and pos.second >= berthgoal.second 
+            and pos.second <= berthgoal.second + 3
+            or goods == 0){
+            stop_flag = 1;
+        }
+        else{ // 如果停在外面，且携带物品
+            stop_flag = 2;
+        }
     }
-
-
 
 };

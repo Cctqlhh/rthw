@@ -25,12 +25,14 @@ class DStarLite
   // vector<State> getPath() const; //获取路径，返回坐标vector
   deque<State> getPath() const; //获取路径，返回坐标deque
   State peekNext(const State &s) const; //返回下一个位置
+  // State peekNext_ez(const State &s) const; 
   State moveNext(); //移动到下一个位置
   void toggleCell(const State &u); //切换位置状态
   void blockCell(const State &u); //阻塞障碍物
   void clearCell(const State &u); //清除障碍物
   void updateMap(const Grid &newMap); //更新地图
   State goal() const { return s_goal; }; //返回目标位置
+  void updateSCurrent(const State &s){s_current = s;};
 
  private:
   Grid _map; //存储网格状态，0为可通行，1为障碍物
@@ -214,6 +216,37 @@ State DStarLite::peekNext(const State &s) const
   }
   return s_min;
 }
+
+// State DStarLite::peekNext_ez(const State &s) const
+// {
+//   if (s == s_goal)
+//     return s; // 当前位置为终点则返回当前位置
+
+//   State s_min = s; // 初始化最小值为当前位置
+//   int min_g_value = _INF_;
+//   bool has_reachable_neighbor = false;
+
+//   for (const auto &neighbor: neighborStates(s))
+//   {
+//     int g_val = g(neighbor);
+//     if (g_val < _INF_)
+//     {
+//       has_reachable_neighbor = true;
+//       if (g_val < min_g_value) {
+//           min_g_value = g_val;
+//           s_min = neighbor; // 更新最小G值的邻居位置，作为下一个位置
+//       }
+//     }
+//   }
+  
+//   if (!has_reachable_neighbor) {
+//       // Handle the case where no neighbors are reachable
+//       // Possible re-planning or alternative strategies
+//       return /* special state or action */;
+//   }
+
+//   return (min_g_value < _INF_) ? s_min : s;
+// }
 
 State DStarLite::moveNext()
 {

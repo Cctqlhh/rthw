@@ -39,12 +39,22 @@ void interactWithJudger(int totalFrames) {
         
     // 机器人操作
         for(int i = 0; i < robot_num; ++i){ // 第i个机器人的操作
+            cerr << "robot" << i << endl;
+            cerr << robot[i].status << endl;
         // 路径规划 
+            if(frame != 1 and robot[i].plan_ready == 0)
+                continue;
+
             robot[i].getMap(gds); // 传入地图
+
             // cerr << "robot" << i << endl;
             modifyGoalOfRobot(robot[i], id); // 修改目标（到达则修改）
-            
-            robot[i].planPath(); // 路径规划方式：目标改变重新规划/根据规则调整路径
+            // 如果更改会导致在move planPath 中，使 plan_ready变为0
+            // robot[i].planPath(); // 路径规划方式：目标改变重新规划/根据规则调整路径
+            robot[i].move();  // 移动,planPath已放到move中
+
+            robot[i].updateMap(gds); // 更新地图
+
 
             if (robot[i].plan_ready == 0) { // 未准备好，即重新规划路径，加入队列
                 unique_lock<mutex> lock(mtx);
@@ -52,10 +62,9 @@ void interactWithJudger(int totalFrames) {
                 lock.unlock();
                 cv.notify_all(); 
                 robot[i].plan_ready = -1; //准备中
+                continue;
             }
- 
-            robot[i].move();  // 移动
-            robot[i].updateMap(gds); // 更新地图
+
             if (robot[i].cmd != -1)
                 printf("move %d %d\n", i, robot[i].cmd);
                 
@@ -74,7 +83,7 @@ void interactWithJudger(int totalFrames) {
                 {
                     printf("pull %d\n", i);                      // 指令：pull 机器人id0-9  放货  每个机器人在自己对应泊位放货
                     berth[robot[i].berthgoal_id].num_in_berth += 1; // 泊位物品数量+1
-                    robot[i].goal = robot[i].pos;
+                    // robot[i].goal = robot[i].pos;
                 }
             }
         }
@@ -163,9 +172,10 @@ void pathPlanning() {
             computationQueue.pop();
 
             lock.unlock();
-
+            //重新规划时需要获取最新地图
+            robot[robotId].getMap(gds);
             robot[robotId].rePlan();
-
+            robot[robotId].updateMap(gds);
             lock.lock();
         }
     }

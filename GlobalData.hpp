@@ -34,6 +34,7 @@ Grid gds(n, vector<int>(n, 1)); //全1地图
 
 bool compareByTransportTime(const Berth& a, const Berth& b);
 void modifyGoalOfRobot(Robot& rbt, const int& curframe_id);
+State NearestBerthOfRobotNow(const Robot& rbt);
 
 void Init()
 {
@@ -154,12 +155,13 @@ bool compareByTransportTime(const Berth& a, const Berth& b) {
 }
 
 void modifyGoalOfRobot(Robot& rbt, const int& curframe_id) {
-    if(rbt.pos == rbt.goal){
+    if(rbt.pos == rbt.goal or rbt.stop_flag > 0){ // 到达，或不正常停止
         // if(rbt.goal == rbt.berthgoal){ // 到达泊位，获取新的物品位置
-        if (rbt.goal.first >= berth[rbt.berthgoal_id].x 
-            and rbt.goal.first <= berth[rbt.berthgoal_id].x + 3 
-            and rbt.goal.second >= berth[rbt.berthgoal_id].y 
-            and rbt.goal.second <= berth[rbt.berthgoal_id].y + 3){
+        if (rbt.stop_flag == 1 or
+            (rbt.pos.first >= berth[rbt.berthgoal_id].x 
+            and rbt.pos.first <= berth[rbt.berthgoal_id].x + 3 
+            and rbt.pos.second >= berth[rbt.berthgoal_id].y 
+            and rbt.pos.second <= berth[rbt.berthgoal_id].y + 3)){
 
             berth[rbt.berthgoal_id].judge_occupy_timeout(curframe_id);
 
@@ -168,11 +170,38 @@ void modifyGoalOfRobot(Robot& rbt, const int& curframe_id) {
             berth[rbt.berthgoal_id].things_map.begin()->second.to_robot = 1; // 物品设定为已占用
             berth[rbt.berthgoal_id].things_map.erase(berth[rbt.berthgoal_id].things_map.begin()); // 更新泊位的最近物品
             berth[rbt.berthgoal_id].update_nearest_thing_from_history(); // 更新泊位的最近物品
+            cerr << "pos " << rbt.pos.first << "," << rbt.pos.second << endl;
+            cerr << "new goal " << rbt.goal.first << "," << rbt.goal.second << endl;
+        }
+        else if(rbt.stop_flag == 2){ // 第二种停止情况
+
+            rbt.goal = NearestBerthOfRobotNow(rbt);
+            // rbt.goal = rbt.berthgoal; // 暂时换一个泊位，可以计算除了原来泊位之外最近的指定泊位
         }
         else{ // 到达物品，返回泊位
             rbt.goal = rbt.berthgoal;
         }
+        rbt.stop_flag = 0;
     }
     //未到达泊位，不进行操作
 }
 
+State NearestBerthOfRobotNow(const Robot& rbt){
+    int min_dis = _INF_;
+    State min_state;
+    for (size_t i = 0; i < 5; i++)
+    {
+        Berth tempBerth = berth_order[i];
+        if(rbt.berthgoal_id != tempBerth.berth_id){
+            int temp_dis = manhattanDistance(rbt.pos.first, rbt.pos.second, tempBerth.x, tempBerth.y);
+            if(temp_dis < min_dis){
+                min_dis = temp_dis;
+                min_state = {tempBerth.x, tempBerth.y};
+            }
+        }
+    }
+    // rbt.berthgoal_id = min_id;
+    return min_state;
+       
+    
+}
