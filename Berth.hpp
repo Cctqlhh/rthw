@@ -3,17 +3,29 @@
 using namespace std;
 
 
-struct Compare 
-{ 
+// struct Compare 
+// { 
+//     bool operator()(const pair<int, int>& a, const pair<int, int>& b) const 
+//     { 
+//         if (a.first == b.first) 
+//         { 
+//             return a.second > b.second; // 如果键相同，则按值排序 
+//         } 
+//         return a.first < b.first; 
+//     } 
+// };
+
+struct Compare {
+    // 根据 价值/距离 比例排序 价值越高，距离越小，比值越高，物品越优
     bool operator()(const pair<int, int>& a, const pair<int, int>& b) const 
-    { 
-        if (a.first == b.first) 
-        { 
-            return a.second > b.second; // 如果键相同，则按值排序 
-        } 
-        return a.first < b.first; 
-    } 
+    {
+        double ratioA = static_cast<double>(a.second) / a.first;
+        double ratioB = static_cast<double>(b.second) / b.first;
+        
+        return ratioA > ratioB;
+    }
 };
+
 
 struct Berth
 {
@@ -62,7 +74,7 @@ struct Berth
                 }
             }
 
-            //当前帧最近物品存入map中
+            // 当前帧最近物品存入map中
             things_map.insert(make_pair(make_pair(curframe_min_distance,curframe_nearest_thing.value),curframe_nearest_thing));
 
             update_nearest_thing_from_history();
