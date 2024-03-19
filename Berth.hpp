@@ -42,9 +42,12 @@ struct Berth
     int num_in_berth;  // 泊位内当前的物品数量
     Things nearest_thing;           // 历史最近物品
     int min_distance = INT_MAX;     // 历史最近物品的距离
-    multimap<pair<int,int>, Things, Compare> things_map;    // key为(距离，物品价值)，value为物品对象
+
+    // multimap<pair<int,int>, Things, Compare> things_map;    // key为(距离，物品价值)，value为物品对象
     // 每个泊位的map可能会产生重复问题，导致泊位根据map更改最优目标物品时产生目标重复问题
 
+    // 修改 things_map 的声明，使其存储指向 Things 对象的指针
+    multimap<pair<int, int>, Things*, Compare> things_map;   // key为(距离，物品价值)，value为物品对象的指针
 
     Berth(){}
     Berth(int x, int y, int transport_time, int loading_speed) {
@@ -58,26 +61,16 @@ struct Berth
     void choose_nearest_thing(vector<Things>& cur_things)
     {
         int distance;
-        // int curframe_min_distance = INT_MAX;    // 当前帧最近物品的距离
-        // Things curframe_nearest_thing;          // 当前帧最近物品
-        // auto curframe_it = cur_things.begin();  // 当前帧最近物品迭代器
         if(cur_things.size() != 0)
         {
-            //遍历当前帧中的物品对象，选出当前帧最近的物品
+            //遍历当前帧中的物品对象，把当前帧的物品全部放入该泊位的物品things_map中
             for (auto it = cur_things.begin(); it != cur_things.end(); ++it)
             {
                 distance = manhattanDistance(this->x, this->y, it->x, it->y);
-                // distance = abs(this->x - it->x) + abs(this->y - it->y); // 修改为曼哈顿距离函数！！！！！！！！！！！
-                // // it->dst_to_breth = distance;
-                // //选出当前帧的最近物品
-                // if (distance < curframe_min_distance)  //如果当前帧物品距离比历史最近物品更近，则更新
-                // {
-                //     curframe_min_distance = distance;
-                //     curframe_nearest_thing = *it;
-                //     curframe_it = it;
-                // }
                 // 每个泊位存储了每一帧所有的物品信息
-                things_map.insert(make_pair(make_pair(distance, it->value), *it));
+                // things_map.insert(make_pair(make_pair(distance, it->value), *it));
+                // 将对象的地址插入到 things_map 中
+                things_map.insert(make_pair(make_pair(distance, it->value), &(*it)));
             }
 
             //当前帧最近物品存入map中
@@ -95,9 +88,9 @@ struct Berth
         while(true){
             auto first_it = this->things_map.begin();
 
-            // 判断是否被占用或超时
-            if(first_it->second.to_robot == 1 
-                or (curframe_id - first_it->second.frame_id) >= 500){ 
+            // 判断是否被占用或超时     维持时间越大，剩余时间越小，越容易消失，越容易拿不到
+            if(first_it->second->to_robot == 1 
+                or (curframe_id - first_it->second->frame_id) >= 990){ 
                 // 如果最优物品已被机器人占用或超时，则删除该物品，切换次优物品
                 things_map.erase(things_map.begin()); // 切换次优目标物品
                 continue;
@@ -117,9 +110,9 @@ struct Berth
         // 3 机器人获取物品信息前，在nearest_thing超时的情况下，取出map中不超时的第一个最好物品，更新nearest_thing。
         
         auto first_it = this->things_map.begin();
-        if(first_it->second != this->nearest_thing)
+        if(*(first_it->second) != this->nearest_thing)
         {   
-            this->nearest_thing = first_it->second;
+            this->nearest_thing = *(first_it->second);
             // cerr << things_map.size() << endl;
             // this->things_map.erase(first_it);
         }

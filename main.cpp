@@ -47,10 +47,12 @@ void interactWithJudger(int totalFrames) {
                 continue;
 
             robot[i].getMap(gds); // 传入地图
+            // cerr<<"before modifyGoalOfRobot   "<<"berth_map_size  "<< berth[robot[i].berthgoal_id].things_map.size() << endl;
             modifyGoalOfRobot(robot[i], id); // 修改目标（到达则修改）
+            // cerr<<"after modifyGoalOfRobot   "<<"berth_map_size  "<< berth[robot[i].berthgoal_id].things_map.size() << endl;
             // 如果更改会导致在move planPath 中，使 plan_ready变为0
             // robot[i].planPath(); // 路径规划方式：目标改变重新规划/根据规则调整路径
-
+            
             robot[i].move();  // 移动,planPath已放到move中
             robot[i].updateMap(gds); // 更新地图
 
@@ -65,10 +67,23 @@ void interactWithJudger(int totalFrames) {
 
             if (robot[i].cmd != -1)
                 printf("move %d %d\n", i, robot[i].cmd);
-                
+    
+            if(robot[i].getflag == 1 and robot[i].goods == 0)   // 机器人实际未携带物品，但getflag表明拿起物品
+            {
+                cerr<<"get false"<<endl;
+                robot[i].getflag = 0; // 标记机器人放下物品
+            }
+
             if (robot[i].pos == robot[i].goal and robot[i].goods == 0) // 机器人未携带物品
             {
                 printf("get %d\n", i); // 指令：get 机器人id0-9  取货
+                if (!(robot[i].pos.first >= berth[robot[i].berthgoal_id].x 
+                    and robot[i].pos.first <= berth[robot[i].berthgoal_id].x + 3 
+                    and robot[i].pos.second >= berth[robot[i].berthgoal_id].y 
+                    and robot[i].pos.second <= berth[robot[i].berthgoal_id].y + 3)) // 机器人当前位置不在对应泊位范围内
+                {
+                    robot[i].getflag = 1; // 标记机器人拿起物品
+                }
             }
 
             if (robot[i].goods == 1) // 机器人携带物品
@@ -82,6 +97,7 @@ void interactWithJudger(int totalFrames) {
                     printf("pull %d\n", i);                      // 指令：pull 机器人id0-9  放货  每个机器人在自己对应泊位放货
                     berth[robot[i].berthgoal_id].num_in_berth += 1; // 泊位物品数量+1
                     // robot[i].goal = robot[i].pos;
+                    robot[i].getflag = 0; // 标记机器人放下物品
                 }
             }
         }

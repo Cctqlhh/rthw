@@ -32,6 +32,9 @@ Grid gds(n, vector<int>(n, 1)); //全1地图
 // deque<vector<Things>> things;
 // vector<Things> cur_things;
 
+map<int,vector<Things>> total_things;
+// vector<Things> cur_things; // 当前帧的物品信息
+
 bool compareByTransportTime(const Berth& a, const Berth& b);
 void modifyGoalOfRobot(Robot& rbt, const int& curframe_id);
 State NearestBerthOfRobotNow(const Robot& rbt);
@@ -120,13 +123,14 @@ int Input()
         cur_things.push_back(thing); // 加入到当前帧的物品信息
     }
 
+    total_things.insert(make_pair(id, cur_things)); // 加入到总的物品信息容器中
 
     // 遍历选出的5个泊位 并选择每个泊位在当前帧以及之前帧中最近的物品
     // 五个泊位选出自己的最近物品之后，更新map容器
     // 每帧的开始，选出5个泊位最近的物品
     for(int i = 0; i < 5; i ++)
     {
-        berth[boat[i].goal_berth].choose_nearest_thing(cur_things);
+        berth[boat[i].goal_berth].choose_nearest_thing(total_things[id]);
         // cerr << berth[boat[i].goal_berth].things_map.size() << endl;
     }
 
@@ -162,14 +166,15 @@ void modifyGoalOfRobot(Robot& rbt, const int& curframe_id) {
             and rbt.pos.first <= berth[rbt.berthgoal_id].x + 3 
             and rbt.pos.second >= berth[rbt.berthgoal_id].y 
             and rbt.pos.second <= berth[rbt.berthgoal_id].y + 3)){
-
+            // cerr<<"before gei   "<<"berth_map_size  "<< berth[rbt.berthgoal_id].things_map.size() << endl;
             berth[rbt.berthgoal_id].judge_occupy_timeout(curframe_id);
 
             rbt.goal = {berth[rbt.berthgoal_id].nearest_thing.x, berth[rbt.berthgoal_id].nearest_thing.y};
             
-            berth[rbt.berthgoal_id].things_map.begin()->second.to_robot = 1; // 物品设定为已占用
+            berth[rbt.berthgoal_id].things_map.begin()->second->to_robot = 1; // 物品设定为已占用
             berth[rbt.berthgoal_id].things_map.erase(berth[rbt.berthgoal_id].things_map.begin()); // 更新泊位的最近物品
             berth[rbt.berthgoal_id].update_nearest_thing_from_history(); // 更新泊位的最近物品
+            // cerr<<"after gei    "<<"berth_map_size  "<< berth[rbt.berthgoal_id].things_map.size() << endl;
             // cerr << "pos " << rbt.pos.first << "," << rbt.pos.second << endl;
             // cerr << "new goal " << rbt.goal.first << "," << rbt.goal.second << endl;
         }
