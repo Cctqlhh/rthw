@@ -100,7 +100,8 @@ void Init()
 
 int Input()
 {
-    vector<Things> cur_things; // 当前帧的物品信息
+    // vector<Things> cur_things; // 当前帧的物品信息
+    vector<shared_ptr<Things>> cur_things; // 当前帧的物品信息
 
     //从第1帧开始 从1开始递增
     scanf("%d%d", &id, &money); // 帧数，已经获取的money
@@ -113,7 +114,9 @@ int Input()
         int x, y, val;
         scanf("%d%d%d", &x, &y, &val); // λ�� ���<=1000
 
-        Things thing(id, x, y, val); //创建一个物品对象
+        // Things thing(id, x, y, val); //创建一个物品对象
+        auto thing = make_shared<Things>(id, x, y, val); //创建一个物品对象的shared_ptr
+        
         // things_map.insert(make_pair(id, thing)); // 加入到things_map中
         // cur_things.push_back({{x, y}, val});
 
@@ -165,9 +168,10 @@ void modifyGoalOfRobot(Robot& rbt, const int& curframe_id) {
 
             berth[rbt.berthgoal_id].judge_occupy_timeout(curframe_id);
 
-            rbt.goal = {berth[rbt.berthgoal_id].nearest_thing.x, berth[rbt.berthgoal_id].nearest_thing.y};
+            // rbt.goal = {berth[rbt.berthgoal_id].nearest_thing.x, berth[rbt.berthgoal_id].nearest_thing.y};
+            rbt.goal = {berth[rbt.berthgoal_id].nearest_thing->x, berth[rbt.berthgoal_id].nearest_thing->y};
             
-            berth[rbt.berthgoal_id].things_map.begin()->second.to_robot = 1; // 物品设定为已占用
+            berth[rbt.berthgoal_id].things_map.begin()->second->to_robot = 1; // 物品设定为已占用
             berth[rbt.berthgoal_id].things_map.erase(berth[rbt.berthgoal_id].things_map.begin()); // 更新泊位的最近物品
             berth[rbt.berthgoal_id].update_nearest_thing_from_history(); // 更新泊位的最近物品
             // cerr << "pos " << rbt.pos.first << "," << rbt.pos.second << endl;
@@ -203,5 +207,5 @@ State NearestBerthOfRobotNow(const Robot& rbt){
     // rbt.berthgoal_id = min_id;
     // return min_state;
     Berth temp_b = berth_order[rand()%5];
-    return {temp_b.x, temp_b.y}; 
+    return {temp_b.x+1, temp_b.y+2}; 
 }
