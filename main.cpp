@@ -31,10 +31,10 @@ void interactWithJudger(int totalFrames) {
             for(int i = 0; i < robot_num; i ++){
                 robot[i].goal = robot[i].berthgoal;
             }
-            for (int i = 0; i < 5; i++){
-                boat[i].goal = boat[i].goal_berth;     // 每艘船的目标泊位
-                printf("ship %d %d\n", i, boat[i].goal);
-            }
+            // for (int i = 0; i < 5; i++){
+            //     // boat[i].goal = boat[i].goal_berth;     // 每艘船的目标泊位
+            //     printf("ship %d %d\n", i, boat[i].goal_berth);
+            // }
         }
         
     // 机器人操作
@@ -43,7 +43,7 @@ void interactWithJudger(int totalFrames) {
             // cerr << robot[i].status << endl;
         // 路径规划 
 
-            if(frame != 1 and robot[i].plan_ready == 0)
+            if(id != 1 and robot[i].plan_ready == 0)
                 continue;
 
             robot[i].getMap(gds); // 传入地图
@@ -127,7 +127,7 @@ void interactWithJudger(int totalFrames) {
                         berth[boat[i].goal_berth].num_in_berth -= berth[boat[i].goal_berth].loading_speed;
                     }
                     // 船最后一次去虚拟点的时候如果没有装满物品也需要出发并且能够在最后到达虚拟点，避免浪费最后装的物品
-                    if (15000 - frame <= berth[boat[i].goal_berth].transport_time + 10)  //可修改
+                    if (15000 - id <= berth[boat[i].goal_berth].transport_time + 10)  //可修改
                     {
                         printf("go %d\n", i);
                         continue; // 船最后一次去虚拟点，且没有装满物品，不再给该船下达指令
@@ -149,8 +149,8 @@ void interactWithJudger(int totalFrames) {
                 if (boat[i].goal == -1) // 船已到达且目标是虚拟点==船到达虚拟点
                 {
                     boat[i].num = 0; // 清空船的货物数量 全部转换成价值
-                    boat[i].goal = boat[i].goal_berth; //此处之后可改目标泊位
-                    printf("ship %d %d\n", i, boat[i].goal);
+                    // boat[i].goal = boat[i].goal_berth; //此处之后可改目标泊位
+                    printf("ship %d %d\n", i, boat[i].goal_berth);
                 }
             }
         }

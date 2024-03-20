@@ -56,9 +56,6 @@ struct Robot
     }
 
     void planPath(){
-        // 需要等待规划完成
-        // if(plan_ready == 1){ // 规划完了
-
         if(goal == dsl.goal() and pos != dsl.goal()){ 
             // 目标地点未变，且未到达目标地点，不用重新规划，可移动，判断机器人障碍
             // if(stop_flag == 2){
@@ -77,15 +74,14 @@ struct Robot
 //             auto start1 = high_resolution_clock::now();
 // //////
                 adjustPath(); // 等待一次以上,且有机器人障碍物，调整路径
-////////          
+// //////          
 //             auto end = high_resolution_clock::now();
 //             // 计算运行时间
 //             auto duration = duration_cast<std::chrono::milliseconds>(end - start1);
 //             // 输出运行时间
 //             std::cerr << "Program ran for " << duration.count() << " ms." << std::endl;
 // //////
-                next = dsl.peekNext(pos);
-                wait = 0; // 等待清零
+                
                     //好像不是/// 碰撞原因： 等待一次后调整路径，等待清零，但没有判断新的路径上下一步有没有机器人障碍。
             }
             else if(map[next.first][next.second] == 0 and wait > 0){
@@ -98,9 +94,6 @@ struct Robot
             plan_ready = 0; // 重新规划路径，未准备好
             wait = 0; // 等待清零
         }
-        // }
-        // 规划未完成，则不做操作
-
         
     }
 
@@ -115,7 +108,20 @@ struct Robot
 
     void adjustPath()
     {
-        dsl.updateMap(map);
+        // dsl.updateMap(map);
+        if(next == goal or (
+            next.first >= berthgoal.first
+            and next.first <= berthgoal.first + 3 
+            and next.second >= berthgoal.second 
+            and next.second <= berthgoal.second + 3
+        ))
+            wait = wait;
+        else {
+            dsl.toggleCell(next); // 障碍物位置
+            next = dsl.peekNext(pos);
+            wait = 0; // 等待清零
+        }
+        
     }
 
     void move()
