@@ -71,20 +71,28 @@ void Init()
     }
 
 
-
-    for(int i = 0;i<5;i++)
-    {
-        robot[i].berthgoal = {berth_order[i%5].x, berth_order[i%5].y};  // 机器人的目标泊位是泊位的坐标state
-        robot[i].berthgoal_id = berth_order[i%5].berth_id;  // 机器人的目标泊位的id
-
-    }
     
-    for(int i = 5;i<10;i++)
-    {
+    // for(int i = 0;i<5;i++)
+    // {
+    //     robot[i].berthgoal = {berth_order[i%5].x, berth_order[i%5].y};  // 机器人的目标泊位是泊位的坐标state
+    //     robot[i].berthgoal_id = berth_order[i%5].berth_id;  // 机器人的目标泊位的id
 
-        robot[i].berthgoal = {berth_order[i%5].x+3, berth_order[i%5].y+3};
-        robot[i].berthgoal_id = berth_order[i%5].berth_id;  // 机器人的目标泊位的id
+    // }
+    
+    // for(int i = 5;i<10;i++)
+    // {
+
+    //     robot[i].berthgoal = {berth_order[i%5].x+3, berth_order[i%5].y+3};
+    //     robot[i].berthgoal_id = berth_order[i%5].berth_id;  // 机器人的目标泊位的id
+    // }
+
+    //10个机器人分别对应一个泊位
+    for(int i = 0;i<10;i++)
+    {
+        robot[i].berthgoal = {berth_order[i].x, berth_order[i].y};  // 机器人的目标泊位是泊位的坐标state，注意泊位是一个范围
+        robot[i].berthgoal_id = berth_order[i].berth_id;  // 机器人的目标泊位的id
     }
+
 
     scanf("%d", &boat_capacity); // �����������װ����Ʒ��
     for(int i = 0;i<5;i++)
@@ -124,14 +132,21 @@ int Input()
     }
 
 
-    // 遍历选出的5个泊位 并选择每个泊位在当前帧以及之前帧中最近的物品
-    // 五个泊位选出自己的最近物品之后，更新map容器
-    // 每帧的开始，选出5个泊位最近的物品
-    for(int i = 0; i < 5; i ++)
+    // // 遍历选出的5个泊位 并选择每个泊位在当前帧以及之前帧中最近的物品
+    // // 五个泊位选出自己的最近物品之后，更新map容器
+    // // 每帧的开始，选出5个泊位最近的物品
+    // for(int i = 0; i < 5; i ++)
+    // {
+    //     berth[boat[i].goal_berth].choose_nearest_thing(cur_things);
+    //     // cerr << berth[boat[i].goal_berth].things_map.size() << endl;
+    // }
+
+    //遍历选出的10个泊位 并选择每个泊位在当前帧以及之前帧中最近的物品
+    for(int i = 0; i < 10; i ++)
     {
-        berth[boat[i].goal_berth].choose_nearest_thing(cur_things);
-        // cerr << berth[boat[i].goal_berth].things_map.size() << endl;
+        berth[robot[i].berthgoal_id].choose_nearest_thing(cur_things);
     }
+
 
     // //当前帧的物品信息cur_things（已经去除了5个被锁定的物品）加入到things_map中
     // things_map.insert(make_pair(id, cur_things));
