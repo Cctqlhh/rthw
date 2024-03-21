@@ -78,7 +78,7 @@ void Init()
 
     for (auto it = robot_noid.begin(); it != robot_noid.end(); ++it)
     {
-        for(int i = 0; i < 5; ++i){
+        for(int i = 0; i < 10; ++i){
             it->second->berthgoal_id = berth_order[i].berth_id; // 给定初始berthid
             it->second->berthgoal = {berth_order[i].x, berth_order[i].y};
 
@@ -160,11 +160,16 @@ int Input()
     // 遍历选出的5个泊位 并选择每个泊位在当前帧以及之前帧中最近的物品
     // 五个泊位选出自己的最近物品之后，更新map容器
     // 每帧的开始，选出5个泊位最近的物品
-    for(int i = 0; i < 5; i ++)
+    for(int i = 0; i < 10; i ++)
     {
-        berth[boat[i].goal_berth].choose_nearest_thing(cur_things);
+        berth[i].choose_nearest_thing(cur_things); // 选出当前帧最近的物品
         // cerr << berth[boat[i].goal_berth].things_map.size() << endl;
     }
+    // for(int i = 0; i < 10; i ++)
+    // {
+    //     berth[i].choose_nearest_thing();
+    // }
+    // Berth::things_map_record.clear(); // 清空记录
 
     // //当前帧的物品信息cur_things（已经去除了5个被锁定的物品）加入到things_map中
     // things_map.insert(make_pair(id, cur_things));
@@ -177,6 +182,7 @@ int Input()
         scanf("%d%d%d%d", &temp_goods, &temp_pos.first, &temp_pos.second, &temp_status); //
         if(id == 1){
             robot[i] = robot_noid[temp_pos];
+            robot[i]->robot_id = i;
         }
 
         // 状态写入
@@ -218,8 +224,16 @@ bool modifyGoalOfRobot(shared_ptr<Robot>& rbt, const int& curframe_id) {
             // rbt->goal = {berth[rbt->berthgoal_id].nearest_thing.x, berth[rbt->berthgoal_id].nearest_thing.y};
             rbt->goal = {berth[rbt->berthgoal_id].nearest_thing->x, berth[rbt->berthgoal_id].nearest_thing->y};
 
-            berth[rbt->berthgoal_id].things_map.begin()->second->to_robot = 1; // 物品设定为已占用
-            berth[rbt->berthgoal_id].things_map.erase(berth[rbt->berthgoal_id].things_map.begin()); // 更新泊位的最近物品
+            auto it = berth[rbt->berthgoal_id].things_map.begin();
+            it->second->to_robot = 1; // 物品设定为已占用
+
+
+            //
+            // Berth::things_map_record.insert(make_pair(rbt->robot_id, make_pair(rbt->berthgoal_id, it->second)));
+            //
+
+
+            berth[rbt->berthgoal_id].things_map.erase(it); // 更新泊位的最近物品
             berth[rbt->berthgoal_id].update_nearest_thing_from_history(); // 更新泊位的最近物品
             // cerr << "pos " << rbt->pos.first << "," << rbt->pos.second << endl;
             // cerr << "new goal " << rbt->goal.first << "," << rbt->goal.second << endl;
@@ -234,6 +248,7 @@ bool modifyGoalOfRobot(shared_ptr<Robot>& rbt, const int& curframe_id) {
             }
             else if(rbt->berth_id_able == vector<int>{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}){ // 泊位全不可用
                 rbt->cantgo = 1;
+                gds_norobot[rbt->pos.first][rbt->pos.second] = 1; // 机器人位置设为障碍
             }
             else{
                 findAbleBerth(rbt);
@@ -264,11 +279,15 @@ State NearestBerthOfRobotNow(shared_ptr<Robot>& rbt) {
     // return min_state;
     Berth temp_b;
     while(true){
-        if(!rbt->isBerthAble()) break;
-        temp_b = berth_order[rand()%5];
-        rbt->berthgoal_id = temp_b.berth_id;
+        temp_b = berth_order[rand()%10];
+        // rbt->berthgoal_id = temp_b.berth_id;
+        if(rbt->isBerthAble()) break;
+        if(rbt->berth_id_able == vector<int>{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}){
+            rbt->cantgo = 1;
+            break;
+        }
     }
-    return {temp_b.x+1, temp_b.y+1};
+    return {temp_b.x+2, temp_b.y+2};
 }
 
 void findAbleBerth(shared_ptr<Robot>& rbt) {
@@ -288,9 +307,9 @@ void findAbleBerth(shared_ptr<Robot>& rbt) {
     // rbt->berthgoal_id = min_id;
     // return min_state;
     while(true){
-        if(!rbt->isBerthAble()) break;
-        Berth temp_b = berth_order[rand()%5];
+        Berth temp_b = berth_order[rand()%10];
         rbt->berthgoal_id = temp_b.berth_id;
         rbt->berthgoal = {temp_b.x+1, temp_b.y+1};
+        if(rbt->isBerthAble()) break;
     }
 }

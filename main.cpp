@@ -36,19 +36,26 @@ void interactWithJudger(int totalFrames) {
     // 机器人操作
         for(int i = 0; i < robot_num; ++i){ // 第i个机器人的操作
             // cerr << "robot " << i << endl;
-            // cerr << robot[i]->status << endl;
         // 路径规划 
-            if((id != 1 and robot[i]->plan_ready == 0) or robot[i]->cantgo)
+            if((id != 1 and robot[i]->plan_ready != 1) or robot[i]->cantgo)
                 continue;
 
             robot[i]->getMap(gds); // 传入地图
-            if(!modifyGoalOfRobot(robot[i], id))// 修改目标（到达则修改）
+            if(!modifyGoalOfRobot(robot[i], id)){// 修改目标（到达则修改）
+                robot[i]->updateMap(gds);
                 continue; // 修改目标失败，跳过（当前帧保存的物品不满足条件
+            }
             // 如果更改会导致在move planPath 中，使 plan_ready变为0
+            // cerr << "modifyGoalOfRobot ok" << endl;
             // robot[i]->planPath(); // 路径规划方式：目标改变重新规划/根据规则调整路径
-            if(robot[i]->cantgo == 1) continue; // 不能到达目标，跳过
+            if(robot[i]->cantgo == 1) {
+                robot[i]->updateMap(gds);
+                continue; // 不能到达目标，跳过
+            }
             robot[i]->move();  // 移动,planPath已放到move中
+            // cerr << "move ok" << endl;
             robot[i]->updateMap(gds); // 更新地图
+
 
             if (robot[i]->plan_ready == 0) { // 未准备好，即重新规划路径，加入队列
                 unique_lock<mutex> lock(mtx);
@@ -184,16 +191,30 @@ void pathPlanning() {
             //重新规划时需要获取最新地图
             robot[robotId]->getMap_cst(gds_norobot);
             robot[robotId]->rePlan();
-            if(!robot[robotId]->dsl.isPathAvailable()){
-                if(robot[robotId]->pos.first >= berth[robot[robotId]->berthgoal_id].x 
-                and robot[robotId]->pos.first <= berth[robot[robotId]->berthgoal_id].x + 3 
-                and robot[robotId]->pos.second >= berth[robot[robotId]->berthgoal_id].y 
-                and robot[robotId]->pos.second <= berth[robot[robotId]->berthgoal_id].y + 3){
+            
+            if(robot[robotId]->pos.first >= berth[robot[robotId]->berthgoal_id].x 
+            and robot[robotId]->pos.first <= berth[robot[robotId]->berthgoal_id].x + 3 
+            and robot[robotId]->pos.second >= berth[robot[robotId]->berthgoal_id].y 
+            and robot[robotId]->pos.second <= berth[robot[robotId]->berthgoal_id].y + 3){
+                // 机器人不可到达该物品，将物品重新加入到其他泊位的thingsmap中
+                if(!robot[robotId]->dsl.isPathAvailable()){
+                    robot[robotId]->goal = robot[robotId]->pos;
                     
+                    // Berth::things_map_record[robotId].second->to_robot = 0;
                 }
-                else
-                    robot[robotId]->berth_id_able[robot[robotId]->berthgoal_id] = 0;
+                else{ // 可以到达该物品
+                    // Berth::things_map_record.erase(robotId);
+                }
+
             }
+                // 如果在泊位内，说明机器人不能前往该物品，下一轮重新选取物品
+            else{ // 如果不在泊位内，path不可行说明机器人不能前往该泊位
+                if(!robot[robotId]->dsl.isPathAvailable()){ // 在物品处规划，泊位不可达
+                    robot[robotId]->berth_id_able[robot[robotId]->berthgoal_id] = 0;
+                }
+            }
+            
+            robot[robotId]->plan_ready = 1;
             lock.lock();
         }
     }

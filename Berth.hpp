@@ -46,7 +46,7 @@ struct Berth
     // multimap<pair<int,int>, Things, Compare> things_map;    // key为(距离，物品价值)，value为物品对象
     multimap<pair<int,int>, shared_ptr<Things>, Compare> things_map;
     // 每个泊位的map可能会产生重复问题，导致泊位根据map更改最优目标物品时产生目标重复问题
-
+    // static map<int, pair<int, shared_ptr<Things>>> things_map_record; // robot_id, <berth_id, ptr_thing>
 
     Berth(){}
     Berth(int x, int y, int transport_time, int loading_speed) {
@@ -82,13 +82,27 @@ struct Berth
                 // 每个泊位存储了每一帧所有的物品信息
                 things_map.insert(make_pair(make_pair(distance, (*it)->value), *it));
             }
-
+        
             //当前帧最近物品存入map中
             // things_map.insert(make_pair(make_pair(curframe_min_distance,curframe_nearest_thing.value),curframe_nearest_thing));
-
+            
             update_nearest_thing_from_history();
         }
-    }     
+    }  
+    // void choose_nearest_thing()
+    // {
+    //     int distance; // thingsmap中已有的物品，还未处理
+    //     if(things_map_record.size() != 0)
+    //     {
+    //         for(auto it = things_map_record.begin(); it != things_map_record.end(); ++it){
+    //             if(it->second.first != this->berth_id){
+    //                 distance = manhattanDistance(this->x, this->y, it->second.second->x, it->second.second->y);
+    //                 things_map.insert(make_pair(make_pair(distance, it->second.second->value), it->second.second));
+    //             }
+    //         }
+    //         update_nearest_thing_from_history();
+    //     }
+    // }  
 
     // 机器人获取物品信息前，首先判断nearest_thing是否超时，
     // 如果不超时，函数不操作；
@@ -96,10 +110,11 @@ struct Berth
     bool judge_occupy_timeout(const int& curframe_id) // 物品map为空时无法更新，返回false。成功更新返回ture
     {
         while(true){
-            auto first_it = this->things_map.begin();
+            cerr << things_map.size() << endl;
             if(things_map.size() == 0){
                 return false;
             }
+            auto first_it = this->things_map.begin();
             // 判断是否被占用或超时
             if(first_it->second->to_robot == 1 
                 or (curframe_id - first_it->second->frame_id) >= 700){ // 已存在时间超过300帧，最多剩下700帧时间可达

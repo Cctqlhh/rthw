@@ -7,11 +7,12 @@ using namespace std::chrono;
 struct Robot
 {
     // int x, y, goods;
-    int getflag = 0;
+    int robot_id;
+    // int getflag = 0;
     int goods = 0; // 0无货，1有货
     int cmd = -1; // 行动指令
     State pos; //位置
-  
+    
     int status = 1; // 1正常，0恢复中
     // int mbx, mby;
     State goal; //目标
@@ -31,6 +32,8 @@ struct Robot
     int berthgoal_id;   // 机器人的目标泊位id
     State berthgoal;    // 机器人的目标泊位坐标
     vector<int> berth_id_able{1, 1, 1, 1, 1, 1, 1, 1, 1, 1};// 泊位是否可用
+    int thing_flag = -1; 
+    // -1目标为泊位；0没有目标物品；1有目标物品，但未确定是否能到达；2能到达目标物品；3不能到达目标物品
 
     int cantgo = 0;
 
@@ -116,7 +119,6 @@ struct Robot
             map[goal.first][goal.second] = 0;
         }
         dsl = DStarLite(map, {200, 200}, pos, goal);
-        plan_ready = 1;
     }
 
     void adjustPath()
