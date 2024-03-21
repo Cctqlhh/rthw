@@ -33,6 +33,7 @@ class DStarLite
   void updateMap(const Grid &newMap); //更新地图
   State goal() const { return s_goal; }; //返回目标位置
   void updateSCurrent(const State &s){s_current = s;};
+  bool isPathAvailable() const; // 计算最短路径后可调用，判断是否通路
 
  private:
   Grid _map; //存储网格状态，0为可通行，1为障碍物
@@ -117,6 +118,12 @@ void DStarLite::computeShortestPath()
       updateVertex(neighbor); // 更新邻居节点信息
     }
   }
+}
+
+bool DStarLite::isPathAvailable() const {
+  // 检查目标状态的rhs值和起点状态的g值
+  // 如果目标状态的rhs值是无限大，或起点状态的g值是无限大，则路径不存在
+  return !(rhs(s_goal) == _INF_ || g(s_start) == _INF_);
 }
 
 void DStarLite::updateVertex(const State &s)
