@@ -8,7 +8,7 @@ struct Robot
 {
     // int x, y, goods;
     int robot_id;
-    // int getflag = 0;
+    int getflag = 0;
     int goods = 0; // 0无货，1有货
     int cmd = -1; // 行动指令
     State pos; //位置
