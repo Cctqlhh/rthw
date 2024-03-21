@@ -113,7 +113,7 @@ void interactWithJudger(int totalFrames) {
                     and 15000 - id <= 3*berth[boat[i].goal_berth].transport_time + 515)  //可修改
                 {
                     printf("go %d\n", i);
-                    cerr<<" boat zai lu shang   "<<boat[i].num<<endl;
+                    // cerr<<" boat zai lu shang   "<<boat[i].num<<endl;
                     continue;
                 }
                 continue;
@@ -139,7 +139,7 @@ void interactWithJudger(int totalFrames) {
                     if (15000 - id >= 3*berth[boat[i].goal_berth].transport_time + 485
                     and 15000 - id <= 3*berth[boat[i].goal_berth].transport_time + 515)  //可修改
                     {
-                        cerr<<" boat zai bo wei   "<<boat[i].num<<endl;
+                        // cerr<<" boat zai bo wei   "<<boat[i].num<<endl;
                         printf("go %d\n", i);
                         continue;
                     }
@@ -173,7 +173,7 @@ void interactWithJudger(int totalFrames) {
                     if (15000 - id >= 3*berth[boat[i].goal_berth].transport_time + 485
                     and 15000 - id <= 3*berth[boat[i].goal_berth].transport_time + 515)  //可修改
                     {
-                        cerr<<" boat zai xu ni dian   "<<boat[i].num<<endl;
+                        // cerr<<" boat zai xu ni dian   "<<boat[i].num<<endl;
                         printf("go %d\n", i);
                         continue;
                     }
