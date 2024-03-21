@@ -15,6 +15,7 @@ typedef std::vector<vector<int>> Grid; //二维vector，地图值？
 
 const int n = 200;
 const int robot_num = 10;
+const int boat_num = 5;
 const int berth_num = 10;
 const int N = 210;
 
@@ -59,35 +60,49 @@ void Init()
         berth[id].num_in_berth = 0;    // 泊位的物品数量清零（初始化）
     }
 
-    // 刘：我感觉最好不要对原berth的输入顺序打乱，复制一个新的泊位容器，对新容器排序打乱之后，通过每个元素的id 对应原容器的序号
     berth_order = berth; // 复制一份berth_order，用于排序
     sort(berth_order.begin(), berth_order.end(), compareByTransportTime);
-    // 根据transport_time对vector<Berth>berth排序   排序后的vector元素序号和Berth_id不一致
-    // sort(berth.begin(), berth.end(), compareByTransportTime);
 
-    // 设置5艘船的固定目标泊位为前五个泊位
-    for(int i = 0; i < 5; i ++) //判题器的泊位序号是泊位的id号
+    // // 设置5艘船的固定目标泊位为前五个泊位
+    // for(int i = 0; i < 5; i ++) //判题器的泊位序号是泊位的id号
+    // {
+    //     boat[i].goal_berth = berth_order[i].berth_id;    // 每艘船的固定目标泊位
+    //     // 船的目标泊位在第一帧input的时候被覆盖为-1 因为此时还没有下达移动命令，机器人目标泊位还处于-1状态
+    //     // boat[i].goal = berth_order[i].Berth_id;          // 每艘船的目标泊位
+    // }
+
+    // 5艘船，每艘船负责2个泊位
+    for(int i = 0; i < boat_num; i ++) //判题器的泊位序号是泊位的id号
     {
-        boat[i].goal_berth = berth_order[i].berth_id;    // 每艘船的固定目标泊位
-        // 船的目标泊位在第一帧input的时候被覆盖为-1 因为此时还没有下达移动命令，机器人目标泊位还处于-1状态
-        // boat[i].goal = berth_order[i].Berth_id;          // 每艘船的目标泊位
+        boat[i].goal_berth_1 = berth_order[i].berth_id;    // 每艘船的固定目标泊位
+        boat[i].goal_berth_2 = berth_order[i+5].berth_id;    // 每艘船的固定目标泊位
+
     }
 
 
+    // // 10个机器人对应5个泊位
+    // for(int i = 0;i<5;i++)
+    // {
+    //     robot[i].berthgoal = {berth_order[i%5].x, berth_order[i%5].y};  // 机器人的目标泊位是泊位的坐标state
+    //     robot[i].berthgoal_id = berth_order[i%5].berth_id;  // 机器人的目标泊位的id
 
-    for(int i = 0;i<5;i++)
-    {
-        robot[i].berthgoal = {berth_order[i%5].x, berth_order[i%5].y};  // 机器人的目标泊位是泊位的坐标state
-        robot[i].berthgoal_id = berth_order[i%5].berth_id;  // 机器人的目标泊位的id
-
-    }
+    // }
     
-    for(int i = 5;i<10;i++)
-    {
+    // for(int i = 5;i<10;i++)
+    // {
 
-        robot[i].berthgoal = {berth_order[i%5].x+3, berth_order[i%5].y+3};
-        robot[i].berthgoal_id = berth_order[i%5].berth_id;  // 机器人的目标泊位的id
+    //     robot[i].berthgoal = {berth_order[i%5].x+3, berth_order[i%5].y+3};
+    //     robot[i].berthgoal_id = berth_order[i%5].berth_id;  // 机器人的目标泊位的id
+    // }
+
+    // 10个机器人对应10个泊位
+    for(int i = 0;i<robot_num;i++)
+    {
+        robot[i].berthgoal = {berth_order[i].x, berth_order[i].y};  // 机器人的目标泊位是泊位的坐标state
+        robot[i].berthgoal_id = berth_order[i].berth_id;  // 机器人的目标泊位的id
+
     }
+
 
     scanf("%d", &boat_capacity); // �����������װ����Ʒ��
     for(int i = 0;i<5;i++)
@@ -125,17 +140,19 @@ int Input()
 
     total_things.insert(make_pair(id, cur_things)); // 加入到总的物品信息容器中
 
-    // 遍历选出的5个泊位 并选择每个泊位在当前帧以及之前帧中最近的物品
-    // 五个泊位选出自己的最近物品之后，更新map容器
-    // 每帧的开始，选出5个泊位最近的物品
-    for(int i = 0; i < 5; i ++)
+    // // 每帧的开始，分别在选出的5个泊位中建立一个存取物品地址的map
+    // for(int i = 0; i < 5; i ++)
+    // {
+    //     berth[boat[i].goal_berth].choose_nearest_thing(total_things[id]);
+    //     // cerr << berth[boat[i].goal_berth].things_map.size() << endl;
+    // }
+
+    // 每帧的开始，分别在10个泊位中建立一个存取物品地址的map
+    for(int i = 0; i < berth_num; i ++)
     {
-        berth[boat[i].goal_berth].choose_nearest_thing(total_things[id]);
+        berth[i].choose_nearest_thing(total_things[id]);
         // cerr << berth[boat[i].goal_berth].things_map.size() << endl;
     }
-
-    // //当前帧的物品信息cur_things（已经去除了5个被锁定的物品）加入到things_map中
-    // things_map.insert(make_pair(id, cur_things));
 
     for(int i = 0; i < robot_num; i ++) // 
     {

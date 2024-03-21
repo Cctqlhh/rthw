@@ -90,7 +90,7 @@ struct Berth
 
             // 判断是否被占用或超时     维持时间越大，剩余时间越小，越容易消失，越容易拿不到
             if(first_it->second->to_robot == 1 
-                or (curframe_id - first_it->second->frame_id) >= 990){ 
+                or (curframe_id - first_it->second->frame_id) >= 700){ 
                 // 如果最优物品已被机器人占用或超时，则删除该物品，切换次优物品
                 things_map.erase(things_map.begin()); // 切换次优目标物品
                 continue;
