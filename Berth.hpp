@@ -93,11 +93,13 @@ struct Berth
     // 机器人获取物品信息前，首先判断nearest_thing是否超时，
     // 如果不超时，函数不操作；
     // 如果超时，则从map容器中顺序找到不超时的第一个最好物品，更新nearest_thing。
-    void judge_occupy_timeout(const int& curframe_id)
+    bool judge_occupy_timeout(const int& curframe_id) // 物品map为空时无法更新，返回false。成功更新返回ture
     {
         while(true){
             auto first_it = this->things_map.begin();
-
+            if(things_map.size() == 0){
+                return false;
+            }
             // 判断是否被占用或超时
             if(first_it->second->to_robot == 1 
                 or (curframe_id - first_it->second->frame_id) >= 700){ // 已存在时间超过300帧，最多剩下700帧时间可达
@@ -110,7 +112,7 @@ struct Berth
             update_nearest_thing_from_history();
             break;
         }
-        
+        return true;
     }
 
     // 机器人取走历史最近物品，需要根据每个泊位的每帧最近物品map，重新更新历史最近物品
@@ -120,7 +122,8 @@ struct Berth
         // 1 机器人取走物品后需要从历史中更新；
         // 2 当前帧物品进入multimap后需要维护最近物品。
         // 3 机器人获取物品信息前，在nearest_thing超时的情况下，取出map中不超时的第一个最好物品，更新nearest_thing。
-        
+        if(things_map.size() == 0) // 如果map为空，则无法更新nearest_thing
+            return;
         auto first_it = this->things_map.begin();
         // if(*(first_it->second) != this->nearest_thing)
         if(first_it->second != this->nearest_thing)

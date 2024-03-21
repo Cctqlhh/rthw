@@ -29,7 +29,10 @@ struct Robot
     Grid map;
 
     int berthgoal_id;   // 机器人的目标泊位id
-    State berthgoal;    // 机器人的目标泊位
+    State berthgoal;    // 机器人的目标泊位坐标
+    vector<int> berth_id_able{1, 1, 1, 1, 1, 1, 1, 1, 1, 1};// 泊位是否可用
+
+    int cantgo = 0;
 
     // void wat(){
     //     // 是否重新选取目标地点（条件：到达终点/有更好的目标地点选取）
@@ -97,6 +100,16 @@ struct Robot
         
     }
 
+    void Plan_to_Berth(const Grid& m){
+        dsl = DStarLite(m, {200, 200}, pos, berthgoal);
+        if(!dsl.isPathAvailable())
+            berth_id_able[berthgoal_id] = 0;
+    }
+
+    bool isBerthAble(){
+        return berth_id_able[berthgoal_id];
+    }
+
     void rePlan() // goal为新目标，重新规划路径
     {
         if(map[goal.first][goal.second] == 1){
@@ -109,12 +122,12 @@ struct Robot
     void adjustPath()
     {
         // dsl.updateMap(map);
-        if(next == goal or (
-            next.first >= berthgoal.first
-            and next.first <= berthgoal.first + 3 
-            and next.second >= berthgoal.second 
-            and next.second <= berthgoal.second + 3
-        ))
+        // if(next == goal or (
+            // next.first >= berthgoal.first
+            // and next.first <= berthgoal.first + 3 
+            // and next.second >= berthgoal.second 
+            // and next.second <= berthgoal.second + 3))
+        if(next == goal)
             wait = wait;
         else {
             dsl.toggleCell(next); // 障碍物位置
