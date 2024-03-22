@@ -20,6 +20,7 @@ struct Robot
     int wait = 0; // 因障碍等待的次数，达到1则重新规划路线，否则等待，并+1
     int plan_ready = 0; // 0未准备好，1准备好，-1正在规划
     int stop_flag = 0; // 0未因莫名原因停止，1为第一种情况，2为第二种情况
+    double curthing_value = 0; // 当前机器人手里的物品价值
 
     Robot() {}
     Robot(int startX, int startY):
@@ -124,11 +125,6 @@ struct Robot
     void adjustPath()
     {
         // dsl.updateMap(map);
-        // if(next == goal or (
-            // next.first >= berthgoal.first
-            // and next.first <= berthgoal.first + 3 
-            // and next.second >= berthgoal.second 
-            // and next.second <= berthgoal.second + 3))
         if(next == goal)
             wait = wait;
         else {
