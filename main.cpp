@@ -120,6 +120,14 @@ void interactWithJudger(int totalFrames) {
         {
             if (boat[i].status == 0) // 船在移动中 不做任何其他事情
             {
+                // 在3*transport_time+500强行发走，先清空船的容量，保证最后一次发走的时刻，船停留在泊位装货
+                if (15000 - id >= 3*berth[boat[i].goal_berth].transport_time + 485
+                    and 15000 - id <= 3*berth[boat[i].goal_berth].transport_time + 515)  //可修改
+                {
+                    printf("go %d\n", i);
+                    // cerr<<" boat zai lu shang   "<<boat[i].num<<endl;
+                    continue;
+                }
                 continue;
             }
             if (boat[i].status == 1) // 船在移动完成或者装货状态（装货状态是到达泊位，不装货状态是到达虚拟点）
@@ -138,6 +146,17 @@ void interactWithJudger(int totalFrames) {
                         boat[i].num += berth[boat[i].goal_berth].loading_speed;
                         berth[boat[i].goal_berth].num_in_berth -= berth[boat[i].goal_berth].loading_speed;
                     }
+
+                    // 在3*transport_time+500强行发走，先清空船的容量，保证最后一次发走的时刻，船停留在泊位装货
+                    if (15000 - id >= 3*berth[boat[i].goal_berth].transport_time + 485
+                    and 15000 - id <= 3*berth[boat[i].goal_berth].transport_time + 515)  //可修改
+                    {
+                        // cerr<<" boat zai bo wei   "<<boat[i].num<<endl;
+                        printf("go %d\n", i);
+                        continue;
+                    }
+                    
+
                     // 船最后一次去虚拟点的时候如果没有装满物品也需要出发并且能够在最后到达虚拟点，避免浪费最后装的物品
                     if (15000 - id <= berth[boat[i].goal_berth].transport_time + 10)  //可修改
                     {
@@ -161,8 +180,15 @@ void interactWithJudger(int totalFrames) {
                 if (boat[i].goal == -1) // 船已到达且目标是虚拟点==船到达虚拟点
                 {
                     boat[i].num = 0; // 清空船的货物数量 全部转换成价值
-                    // boat[i].goal = boat[i].goal_berth; //此处之后可改目标泊位
                     printf("ship %d %d\n", i, boat[i].goal_berth);
+                    // 在3*transport_time+500强行发走，先清空船的容量，保证最后一次发走的时刻，船停留在泊位装货
+                    if (15000 - id >= 3*berth[boat[i].goal_berth].transport_time + 485
+                    and 15000 - id <= 3*berth[boat[i].goal_berth].transport_time + 515)  //可修改
+                    {
+                        // cerr<<" boat zai xu ni dian   "<<boat[i].num<<endl;
+                        printf("go %d\n", i);
+                        continue;
+                    }
                 }
             }
         }
