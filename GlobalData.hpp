@@ -22,6 +22,7 @@ Robot robot[robot_num + 10];
 // Berth berth[berth_num + 10];
 vector<Berth> berth(10);
 vector<Berth> berth_order(10);  //对berth进行排序后的容器
+vector<Berth> berth_order_val_and_trans(10);  //对berth进行排序后的容器，按照value和transportime排序
 // Boat boat[10];
 vector<Boat> boat(5);
 
@@ -35,6 +36,7 @@ Grid gds(n, vector<int>(n, 1)); //全1地图
 bool compareByTransportTime(const Berth& a, const Berth& b);
 void modifyGoalOfRobot(Robot& rbt, const int& curframe_id);
 State NearestBerthOfRobotNow(const Robot& rbt);
+bool compareBy_val_and_trans(const Berth& a, const Berth& b);
 
 void Init()
 {
@@ -58,6 +60,7 @@ void Init()
 
     // 刘：我感觉最好不要对原berth的输入顺序打乱，复制一个新的泊位容器，对新容器排序打乱之后，通过每个元素的id 对应原容器的序号
     berth_order = berth; // 复制一份berth_order，用于排序
+    berth_order_val_and_trans = berth; // 复制一份berth，用于排序，按照valuerate和transportime排序
     sort(berth_order.begin(), berth_order.end(), compareByTransportTime);
     // 根据transport_time对vector<Berth>berth排序   排序后的vector元素序号和Berth_id不一致
     // sort(berth.begin(), berth.end(), compareByTransportTime);
@@ -167,9 +170,17 @@ int Input()
 }
 
 
-// berth比较函数
+// berth比较函数    通过运输时间排序
 bool compareByTransportTime(const Berth& a, const Berth& b) {
     return a.transport_time < b.transport_time;
+}
+
+// berth比较函数    通过价值和运输时间排序
+bool compareBy_val_and_trans(const Berth& a, const Berth& b)
+{
+    double ratioA= a.totalvalue_till/a.transport_time;
+    double ratioB= b.totalvalue_till/b.transport_time;
+    return ratioA > ratioB;
 }
 
 void modifyGoalOfRobot(Robot& rbt, const int& curframe_id) {
@@ -185,7 +196,8 @@ void modifyGoalOfRobot(Robot& rbt, const int& curframe_id) {
 
             // rbt.goal = {berth[rbt.berthgoal_id].nearest_thing.x, berth[rbt.berthgoal_id].nearest_thing.y};
             rbt.goal = {berth[rbt.berthgoal_id].nearest_thing->x, berth[rbt.berthgoal_id].nearest_thing->y};
-            
+            rbt.curthing_value = berth[rbt.berthgoal_id].nearest_thing->value; // 记录当前物品的价值
+
             berth[rbt.berthgoal_id].things_map.begin()->second->to_robot = 1; // 物品设定为已占用
             berth[rbt.berthgoal_id].things_map.erase(berth[rbt.berthgoal_id].things_map.begin()); // 更新泊位的最近物品
             berth[rbt.berthgoal_id].update_nearest_thing_from_history(); // 更新泊位的最近物品
@@ -223,4 +235,23 @@ State NearestBerthOfRobotNow(const Robot& rbt){
     // return min_state;
     Berth temp_b = berth_order[rand()%5];
     return {temp_b.x+1, temp_b.y+2}; 
+}
+
+
+
+void tenberth_to_fiveberth()
+{
+    for(int i = 0;i<5;i++)
+    {
+        robot[i].berthgoal = {berth_order_val_and_trans[i%5].x, berth_order_val_and_trans[i%5].y};  // 机器人的目标泊位是泊位的坐标state
+        robot[i].berthgoal_id = berth_order_val_and_trans[i%5].berth_id;  // 机器人的目标泊位的id
+
+    }
+    
+    for(int i = 5;i<10;i++)
+    {
+
+        robot[i].berthgoal = {berth_order_val_and_trans[i%5].x+3, berth_order_val_and_trans[i%5].y+3};
+        robot[i].berthgoal_id = berth_order_val_and_trans[i%5].berth_id;  // 机器人的目标泊位的id
+    }
 }

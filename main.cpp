@@ -21,6 +21,7 @@ condition_variable cv;
 queue<int> computationQueue; // 需要计算路径的机器人队列
 bool finished = false; // 标记是否所有帧处理完成
 
+
 void interactWithJudger(int totalFrames) {
     for (int frame = 1; frame <= totalFrames; ++frame) {
         int id = Input(); // 读取场面信息 id第几帧
@@ -99,6 +100,7 @@ void interactWithJudger(int totalFrames) {
                 {
                     printf("pull %d\n", i);                      // 指令：pull 机器人id0-9  放货  每个机器人在自己对应泊位放货
                     berth[robot[i].berthgoal_id].num_in_berth += 1; // 泊位物品数量+1
+                    berth[robot[i].berthgoal_id].totalvalue_till += robot[i].curthing_value;
                     // robot[i].goal = robot[i].pos;
                     robot[i].getflag = 0;
                 }
@@ -106,6 +108,13 @@ void interactWithJudger(int totalFrames) {
         }
         // cerr << "robot" << frame << endl;
 
+        
+        // 评估泊位并将10个泊位转为5个泊位
+        if(id == 5000)
+        {
+            sort(berth_order_val_and_trans.begin(), berth_order_val_and_trans.end(), compareBy_val_and_trans);
+            tenberth_to_fiveberth();
+        }
 
         // 轮船指令
         for (size_t i = 0; i < 5; i++)

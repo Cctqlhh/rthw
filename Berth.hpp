@@ -38,6 +38,7 @@ struct Berth
     int y;
     int transport_time;
     int loading_speed;
+    double totalvalue_till = 0;  // 泊位到测试时刻的总物品价值
 
     int num_in_berth;  // 泊位内当前的物品数量
     // Things nearest_thing;           // 历史最近物品
