@@ -46,7 +46,8 @@ struct Berth
     // multimap<pair<int,int>, Things, Compare> things_map;    // key为(距离，物品价值)，value为物品对象
     multimap<pair<int,int>, shared_ptr<Things>, Compare> things_map;
     // 每个泊位的map可能会产生重复问题，导致泊位根据map更改最优目标物品时产生目标重复问题
-    // static map<int, pair<int, shared_ptr<Things>>> things_map_record; // robot_id, <berth_id, ptr_thing>
+    static map<int, pair<int, shared_ptr<Things>>> things_map_record; // robot_id, <berth_id, ptr_thing>
+    static map<int, shared_ptr<Things>> things_map_reok; // robot_id, <berth_id, ptr_thing>
 
     Berth(){}
     Berth(int x, int y, int transport_time, int loading_speed) {
@@ -89,20 +90,36 @@ struct Berth
             update_nearest_thing_from_history();
         }
     }  
-    // void choose_nearest_thing()
-    // {
-    //     int distance; // thingsmap中已有的物品，还未处理
-    //     if(things_map_record.size() != 0)
-    //     {
-    //         for(auto it = things_map_record.begin(); it != things_map_record.end(); ++it){
-    //             if(it->second.first != this->berth_id){
-    //                 distance = manhattanDistance(this->x, this->y, it->second.second->x, it->second.second->y);
-    //                 things_map.insert(make_pair(make_pair(distance, it->second.second->value), it->second.second));
-    //             }
-    //         }
-    //         update_nearest_thing_from_history();
-    //     }
-    // }  
+    void choose_nearest_thing()
+    {
+        int distance; // thingsmap中已有的物品，还未处理
+        // cerr << things_map_reok.size() << endl;
+        if(things_map_reok.size() != 0)
+        {
+             for(auto it = things_map_reok.begin(); it != things_map_reok.end(); ++it) {
+            // 检查是否已存在
+                std::pair<int, int> key = std::make_pair(manhattanDistance(this->x, this->y, it->second->x, it->second->y), it->second->value);
+                if(it->first != this->berth_id && !existsInMultimap(things_map, key, it->second)) {
+                    things_map.insert(std::make_pair(key, it->second));
+                }
+            }
+            update_nearest_thing_from_history();
+        }
+    } 
+
+bool existsInMultimap(const std::multimap<State, std::shared_ptr<Things>, Compare>& mmap, 
+                      const std::pair<int, int>& key, 
+                      const std::shared_ptr<Things>& value) {
+    auto range = mmap.equal_range(key);
+    for (auto it = range.first; it != range.second; ++it) {
+        if (it->second == value) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
 
     // 机器人获取物品信息前，首先判断nearest_thing是否超时，
     // 如果不超时，函数不操作；
@@ -110,7 +127,7 @@ struct Berth
     bool judge_occupy_timeout(const int& curframe_id) // 物品map为空时无法更新，返回false。成功更新返回ture
     {
         while(true){
-            cerr << things_map.size() << endl;
+            // cerr << things_map.size() << endl;
             if(things_map.size() == 0){
                 return false;
             }

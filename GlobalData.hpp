@@ -78,7 +78,7 @@ void Init()
 
     for (auto it = robot_noid.begin(); it != robot_noid.end(); ++it)
     {
-        for(int i = 0; i < 10; ++i){
+        for(int i = 0; i < 9; ++i){ // 可调整，若初始化超过5s，则减少该值，值大可减少后续判断
             it->second->berthgoal_id = berth_order[i].berth_id; // 给定初始berthid
             it->second->berthgoal = {berth_order[i].x, berth_order[i].y};
 
@@ -156,20 +156,19 @@ int Input()
         cur_things.push_back(thing); // 加入到当前帧的物品信息
     }
 
-
     // 遍历选出的5个泊位 并选择每个泊位在当前帧以及之前帧中最近的物品
     // 五个泊位选出自己的最近物品之后，更新map容器
     // 每帧的开始，选出5个泊位最近的物品
     for(int i = 0; i < 10; i ++)
     {
         berth[i].choose_nearest_thing(cur_things); // 选出当前帧最近的物品
+        berth[i].choose_nearest_thing();
         // cerr << berth[boat[i].goal_berth].things_map.size() << endl;
     }
-    // for(int i = 0; i < 10; i ++)
-    // {
-    //     berth[i].choose_nearest_thing();
-    // }
-    // Berth::things_map_record.clear(); // 清空记录
+    for(auto it = Berth::things_map_reok.begin(); it != Berth::things_map_reok.end(); ++it){
+        it->second->to_robot = 0;
+    }
+    Berth::things_map_reok.clear(); // 清空
 
     // //当前帧的物品信息cur_things（已经去除了5个被锁定的物品）加入到things_map中
     // things_map.insert(make_pair(id, cur_things));
@@ -212,10 +211,17 @@ bool modifyGoalOfRobot(shared_ptr<Robot>& rbt, const int& curframe_id) {
     if(rbt->pos == rbt->goal or rbt->stop_flag > 0 or !rbt->isBerthAble()){ // 到达，或不正常停止
         // if(rbt->goal == rbt->berthgoal){ // 到达泊位，获取新的物品位置
         if (rbt->stop_flag == 1 or
-            (rbt->pos.first >= berth[rbt->berthgoal_id].x 
-            and rbt->pos.first <= berth[rbt->berthgoal_id].x + 3 
-            and rbt->pos.second >= berth[rbt->berthgoal_id].y 
-            and rbt->pos.second <= berth[rbt->berthgoal_id].y + 3)){
+        (rbt->pos.first >= berth[rbt->berthgoal_id].x 
+        and rbt->pos.first <= berth[rbt->berthgoal_id].x + 3 
+        and rbt->pos.second >= berth[rbt->berthgoal_id].y 
+        and rbt->pos.second <= berth[rbt->berthgoal_id].y + 3)){
+            
+            if(rbt->thing_flag == -1)
+                rbt->thing_flag = 0; // 无目标物品
+            else if(rbt->thing_flag == 3){
+                // 其他berth
+                rbt->thing_flag = 0;
+            }
             
             if(!berth[rbt->berthgoal_id].judge_occupy_timeout(curframe_id)){
                 // cerr << "judge false" << endl;
@@ -223,13 +229,15 @@ bool modifyGoalOfRobot(shared_ptr<Robot>& rbt, const int& curframe_id) {
             }
             // rbt->goal = {berth[rbt->berthgoal_id].nearest_thing.x, berth[rbt->berthgoal_id].nearest_thing.y};
             rbt->goal = {berth[rbt->berthgoal_id].nearest_thing->x, berth[rbt->berthgoal_id].nearest_thing->y};
+            rbt->thing_flag = 1; // 有目标物品，但未确定是否可达
 
             auto it = berth[rbt->berthgoal_id].things_map.begin();
             it->second->to_robot = 1; // 物品设定为已占用
 
 
             //
-            // Berth::things_map_record.insert(make_pair(rbt->robot_id, make_pair(rbt->berthgoal_id, it->second)));
+            // 容器保存占用的物品
+            Berth::things_map_record.insert(make_pair(rbt->robot_id, make_pair(rbt->berthgoal_id, it->second)));
             //
 
 
@@ -243,6 +251,10 @@ bool modifyGoalOfRobot(shared_ptr<Robot>& rbt, const int& curframe_id) {
             // rbt->goal = rbt->berthgoal; // 暂时换一个泊位，可以计算除了原来泊位之外最近的指定泊位
         }
         else{ // 到达物品，返回泊位
+            if(rbt->thing_flag == 2){
+                rbt->thing_flag = -1;
+            }
+            
             if(rbt->isBerthAble()){
                 rbt->goal = rbt->berthgoal;
             }

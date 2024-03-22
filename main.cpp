@@ -21,11 +21,15 @@ condition_variable cv;
 queue<int> computationQueue; // 需要计算路径的机器人队列
 bool finished = false; // 标记是否所有帧处理完成
 
+map<int, pair<int, shared_ptr<Things>>> Berth::things_map_record; // robot_id, <berth_id, ptr_thing>
+map<int, shared_ptr<Things>> Berth::things_map_reok; // robot_id, <berth_id, ptr_thing>
+
+
 void interactWithJudger(int totalFrames) {
     for (int frame = 1; frame <= totalFrames; ++frame) {
+        // cerr << "input" << frame << endl;
         int id = Input(); // 读取场面信息 id第几帧
         // cerr << "interactWithJudger" << frame << endl;
-        // cerr << "input" << frame << endl;
         auto frameStartTime = high_resolution_clock::now();
         // if(id == 1){
         //     for(int i = 0; i < robot_num; i ++){
@@ -39,6 +43,15 @@ void interactWithJudger(int totalFrames) {
         // 路径规划 
             if((id != 1 and robot[i]->plan_ready != 1) or robot[i]->cantgo)
                 continue;
+            
+            if(robot[i]->thing_flag == 2){ // 目标物品可达
+                Berth::things_map_record.erase(i);
+            }
+            else if(robot[i]->thing_flag == 3){ // 目标物品不可达
+                Berth::things_map_reok.insert(make_pair(Berth::things_map_record[i].first, Berth::things_map_record[i].second));
+                Berth::things_map_record.erase(i);
+            }
+
 
             robot[i]->getMap(gds); // 传入地图
             if(!modifyGoalOfRobot(robot[i], id)){// 修改目标（到达则修改）
@@ -199,10 +212,11 @@ void pathPlanning() {
                 // 机器人不可到达该物品，将物品重新加入到其他泊位的thingsmap中
                 if(!robot[robotId]->dsl.isPathAvailable()){
                     robot[robotId]->goal = robot[robotId]->pos;
-                    
+                    robot[robotId]->thing_flag = 3; // 不能到达目标物品
                     // Berth::things_map_record[robotId].second->to_robot = 0;
                 }
                 else{ // 可以到达该物品
+                    robot[robotId]->thing_flag = 2; // 可以到达目标物品
                     // Berth::things_map_record.erase(robotId);
                 }
 
@@ -226,6 +240,7 @@ int main() {
 //////
 
     const int totalFrames = 15000;
+
     Init(); //初始化
 //////          
             auto end = high_resolution_clock::now();
