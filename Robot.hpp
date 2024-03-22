@@ -7,11 +7,12 @@ using namespace std::chrono;
 struct Robot
 {
     // int x, y, goods;
+    int robot_id;
     int getflag = 0;
     int goods = 0; // 0无货，1有货
     int cmd = -1; // 行动指令
     State pos; //位置
-  
+    
     int status = 1; // 1正常，0恢复中
     // int mbx, mby;
     State goal; //目标
@@ -30,7 +31,12 @@ struct Robot
     Grid map;
 
     int berthgoal_id;   // 机器人的目标泊位id
-    State berthgoal;    // 机器人的目标泊位
+    State berthgoal;    // 机器人的目标泊位坐标
+    vector<int> berth_id_able{1, 1, 1, 1, 1, 1, 1, 1, 1, 1};// 泊位是否可用
+    int thing_flag = -1; 
+    // -1目标为泊位；0没有目标物品；1有目标物品，但未确定是否能到达；2能到达目标物品；3不能到达目标物品
+
+    int cantgo = 0;
 
     // void wat(){
     //     // 是否重新选取目标地点（条件：到达终点/有更好的目标地点选取）
@@ -98,13 +104,22 @@ struct Robot
         
     }
 
+    void Plan_to_Berth(const Grid& m){
+        dsl = DStarLite(m, {200, 200}, pos, berthgoal);
+        if(!dsl.isPathAvailable())
+            berth_id_able[berthgoal_id] = 0;
+    }
+
+    bool isBerthAble(){
+        return berth_id_able[berthgoal_id];
+    }
+
     void rePlan() // goal为新目标，重新规划路径
     {
         if(map[goal.first][goal.second] == 1){
             map[goal.first][goal.second] = 0;
         }
         dsl = DStarLite(map, {200, 200}, pos, goal);
-        plan_ready = 1;
     }
 
     void adjustPath()
@@ -115,7 +130,12 @@ struct Robot
         else {
             dsl.toggleCell(next); // 障碍物位置
             next = dsl.peekNext(pos);
-            wait = 0; // 等待清零
+            if(map[next.first][next.second] == 1){
+                wait = wait;
+            }
+            else{
+                wait = 0; // 等待清零
+            }
         }
         
     }
