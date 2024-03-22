@@ -21,17 +21,16 @@ condition_variable cv;
 queue<int> computationQueue; // 需要计算路径的机器人队列
 bool finished = false; // 标记是否所有帧处理完成
 
+map<int, pair<int, shared_ptr<Things>>> Berth::things_map_record; // robot_id, <berth_id, ptr_thing>
+map<int, shared_ptr<Things>> Berth::things_map_reok; // robot_id, <berth_id, ptr_thing>
+
+
 void interactWithJudger(int totalFrames) {
     for (int frame = 1; frame <= totalFrames; ++frame) {
+        // cerr << "input" << frame << endl;
         int id = Input(); // 读取场面信息 id第几帧
         // cerr << "interactWithJudger" << frame << endl;
-        // cerr << "input" << frame << endl;
         auto frameStartTime = high_resolution_clock::now();
-        if(id == 1){
-            for(int i = 0; i < robot_num; i ++){
-                robot[i].goal = robot[i].berthgoal;
-            }
-        }
         
         // for(int i = 0; i < 5; i ++){
         //     cerr << "boat" << i << " 状态： " << boat[i].status << endl;
@@ -42,70 +41,80 @@ void interactWithJudger(int totalFrames) {
     // 机器人操作
         for(int i = 0; i < robot_num; ++i){ // 第i个机器人的操作
             // cerr << "robot " << i << endl;
-            // cerr << robot[i].status << endl;
         // 路径规划 
-
-            if(id != 1 and robot[i].plan_ready == 0)
+            if((id != 1 and robot[i]->plan_ready != 1) or robot[i]->cantgo)
                 continue;
+            
+            if(robot[i]->thing_flag == 2){ // 目标物品可达
+                Berth::things_map_record.erase(i);
+            }
+            else if(robot[i]->thing_flag == 3){ // 目标物品不可达
+                Berth::things_map_reok.insert(make_pair(Berth::things_map_record[i].first, Berth::things_map_record[i].second));
+                Berth::things_map_record.erase(i);
+            }
 
-            robot[i].getMap(gds); // 传入地图
-            modifyGoalOfRobot(robot[i], id); // 修改目标（到达则修改）
+
+            robot[i]->getMap(gds); // 传入地图
+            if(!modifyGoalOfRobot(robot[i], id)){// 修改目标（到达则修改）
+                robot[i]->updateMap(gds);
+                continue; // 修改目标失败，跳过（当前帧保存的物品不满足条件
+            }
             // 如果更改会导致在move planPath 中，使 plan_ready变为0
-            // robot[i].planPath(); // 路径规划方式：目标改变重新规划/根据规则调整路径
+            // cerr << "modifyGoalOfRobot ok" << endl;
+            // robot[i]->planPath(); // 路径规划方式：目标改变重新规划/根据规则调整路径
+            if(robot[i]->cantgo == 1) {
+                robot[i]->updateMap(gds);
+                continue; // 不能到达目标，跳过
+            }
+            robot[i]->move();  // 移动,planPath已放到move中
+            // cerr << "move ok" << endl;
+            robot[i]->updateMap(gds); // 更新地图
 
-            robot[i].move();  // 移动,planPath已放到move中
-            robot[i].updateMap(gds); // 更新地图
 
-            if (robot[i].plan_ready == 0) { // 未准备好，即重新规划路径，加入队列
+            if (robot[i]->plan_ready == 0) { // 未准备好，即重新规划路径，加入队列
                 unique_lock<mutex> lock(mtx);
                 computationQueue.push(i); // 需要计划路径的机器人加入队列
                 lock.unlock();
                 cv.notify_all(); 
-                robot[i].plan_ready = -1; //准备中
+                robot[i]->plan_ready = -1; //准备中
                 continue;
             }
 
-            if (robot[i].cmd != -1)
-                printf("move %d %d\n", i, robot[i].cmd);
-
+            if (robot[i]->cmd != -1)
+                printf("move %d %d\n", i, robot[i]->cmd);
             
-            if(robot[i].getflag == 1 and robot[i].goods == 0){
+            if(robot[i]->getflag == 1 and robot[i]->goods == 0){
                 // cerr << i << "get false";
-                // cerr << robot[i].pos.first << "," << robot[i].pos.second << "to" << robot[i].goal.first << "," << robot[i].goal.second << endl;
-                robot[i].getflag = 0;
+                // cerr << robot[i]->pos.first << "," << robot[i]->pos.second << "to" << robot[i]->goal.first << "," << robot[i]->goal.second << endl;
+                robot[i]->getflag = 0;
             }
-
-            if (robot[i].pos == robot[i].goal and robot[i].goods == 0) // 机器人未携带物品
+            if (robot[i]->pos == robot[i]->goal and robot[i]->goods == 0) // 机器人未携带物品
             {
                 printf("get %d\n", i); // 指令：get 机器人id0-9  取货
-
-                if(!(robot[i].pos.first >= berth[robot[i].berthgoal_id].x 
-                    and robot[i].pos.first <= berth[robot[i].berthgoal_id].x + 3 
-                    and robot[i].pos.second >= berth[robot[i].berthgoal_id].y 
-                    and robot[i].pos.second <= berth[robot[i].berthgoal_id].y + 3)){
-                        robot[i].getflag = 1;
-                        // cerr << robot[i].pos.first << "," << robot[i].pos.second << "to" << robot[i].goal.first << "," << robot[i].goal.second << endl;
-
+                if(!(robot[i]->pos.first >= berth[robot[i]->berthgoal_id].x 
+                    and robot[i]->pos.first <= berth[robot[i]->berthgoal_id].x + 3 
+                    and robot[i]->pos.second >= berth[robot[i]->berthgoal_id].y 
+                    and robot[i]->pos.second <= berth[robot[i]->berthgoal_id].y + 3)){
+                        robot[i]->getflag = 1;
+                        // cerr << robot[i]->pos.first << "," << robot[i]->pos.second << "to" << robot[i]->goal.first << "," << robot[i]->goal.second << endl;
                 }
             }
-
-            if (robot[i].goods == 1) // 机器人携带物品
+            if (robot[i]->goods == 1) // 机器人携带物品
             {
                 // 机器人当前位置在其对应泊位范围内
-                if (robot[i].pos.first >= berth[robot[i].berthgoal_id].x 
-                    and robot[i].pos.first <= berth[robot[i].berthgoal_id].x + 3 
-                    and robot[i].pos.second >= berth[robot[i].berthgoal_id].y 
-                    and robot[i].pos.second <= berth[robot[i].berthgoal_id].y + 3)
+                if (robot[i]->pos.first >= berth[robot[i]->berthgoal_id].x 
+                    and robot[i]->pos.first <= berth[robot[i]->berthgoal_id].x + 3 
+                    and robot[i]->pos.second >= berth[robot[i]->berthgoal_id].y 
+                    and robot[i]->pos.second <= berth[robot[i]->berthgoal_id].y + 3)
                 {
                     printf("pull %d\n", i);                      // 指令：pull 机器人id0-9  放货  每个机器人在自己对应泊位放货
-                    berth[robot[i].berthgoal_id].num_in_berth += 1; // 泊位物品数量+1
-                    // robot[i].goal = robot[i].pos;
-                    robot[i].getflag = 0;
+                    berth[robot[i]->berthgoal_id].num_in_berth += 1; // 泊位物品数量+1
+                    // robot[i]->goal = robot[i]->pos;
+                    robot[i]->getflag = 0;
                 }
             }
         }
         // cerr << "robot" << frame << endl;
-
 
         // 轮船指令
         for (size_t i = 0; i < 5; i++)
@@ -233,7 +242,7 @@ void interactWithJudger(int totalFrames) {
             }
         }
 
-        auto frameEndTime = frameStartTime + milliseconds(14);
+        auto frameEndTime = frameStartTime + (id==1?milliseconds(12):milliseconds(14));
         while (high_resolution_clock::now() < frameEndTime) {
             // 忙等待
         }
@@ -263,19 +272,58 @@ void pathPlanning() {
         while (!computationQueue.empty()) {
             int robotId = computationQueue.front();
             computationQueue.pop();
-
+            if(robot[robotId]->cantgo == 1){
+                continue;
+            }
             lock.unlock();
             //重新规划时需要获取最新地图
-            robot[robotId].getMap_cst(gds);
-            robot[robotId].rePlan();
+            robot[robotId]->getMap_cst(gds_norobot);
+            robot[robotId]->rePlan();
+            
+            if(robot[robotId]->pos.first >= berth[robot[robotId]->berthgoal_id].x 
+            and robot[robotId]->pos.first <= berth[robot[robotId]->berthgoal_id].x + 3 
+            and robot[robotId]->pos.second >= berth[robot[robotId]->berthgoal_id].y 
+            and robot[robotId]->pos.second <= berth[robot[robotId]->berthgoal_id].y + 3){
+                // 机器人不可到达该物品，将物品重新加入到其他泊位的thingsmap中
+                if(!robot[robotId]->dsl.isPathAvailable()){
+                    robot[robotId]->goal = robot[robotId]->pos;
+                    robot[robotId]->thing_flag = 3; // 不能到达目标物品
+                    // Berth::things_map_record[robotId].second->to_robot = 0;
+                }
+                else{ // 可以到达该物品
+                    robot[robotId]->thing_flag = 2; // 可以到达目标物品
+                    // Berth::things_map_record.erase(robotId);
+                }
+
+            }
+                // 如果在泊位内，说明机器人不能前往该物品，下一轮重新选取物品
+            else{ // 如果不在泊位内，path不可行说明机器人不能前往该泊位
+                if(!robot[robotId]->dsl.isPathAvailable()){ // 在物品处规划，泊位不可达
+                    robot[robotId]->berth_id_able[robot[robotId]->berthgoal_id] = 0;
+                }
+            }
+            
+            robot[robotId]->plan_ready = 1;
             lock.lock();
         }
     }
 }
 
 int main() {
+//////        
+            auto start1 = high_resolution_clock::now();
+//////
+
     const int totalFrames = 15000;
+
     Init(); //初始化
+//////          
+            auto end = high_resolution_clock::now();
+            // 计算运行时间
+            auto duration = duration_cast<std::chrono::seconds>(end - start1);
+            // 输出运行时间
+            // std::cerr << "Program ran for " << duration.count() << " s." << std::endl;
+//////
     // cerr << "Init" << endl;
     thread judgerThread(interactWithJudger, totalFrames);
     thread planningThread(pathPlanning);
