@@ -124,11 +124,6 @@ struct Robot
     void adjustPath()
     {
         // dsl.updateMap(map);
-        // if(next == goal or (
-            // next.first >= berthgoal.first
-            // and next.first <= berthgoal.first + 3 
-            // and next.second >= berthgoal.second 
-            // and next.second <= berthgoal.second + 3))
         if(next == goal)
             wait = wait;
         else {

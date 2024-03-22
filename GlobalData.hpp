@@ -76,6 +76,7 @@ void Init()
         // 船的目标泊位在第一帧input的时候被覆盖为-1 因为此时还没有下达移动命令，机器人目标泊位还处于-1状态
     }
 
+
     for (auto it = robot_noid.begin(); it != robot_noid.end(); ++it)
     {
         for(int i = 0; i < 9; ++i){ // 可调整，若初始化超过5s，则减少该值，值大可减少后续判断
@@ -87,11 +88,11 @@ void Init()
         }
     }
     
-    int num = 0;
+    int num = 0; //10个机器人分别对应一个泊位
     for (auto it = robot_noid.begin(); it != robot_noid.end(); ++it)
     {
-        it->second->berthgoal_id = berth_order[num%5].berth_id; // 给定初始berthid
-        it->second->berthgoal = {berth_order[num%5].x, berth_order[num%5].y};
+        it->second->berthgoal_id = berth_order[num].berth_id; // 给定初始berthid
+        it->second->berthgoal = {berth_order[num].x, berth_order[num].y};
 
         if(it->second->isBerthAble()){ // 如果berth可以前往，则plan
             it->second->Plan_to_Berth(gds_norobot);
@@ -102,32 +103,19 @@ void Init()
             it->second->goal = it->second->pos; // berth不可行，则规划路径不通，令目标设为位置，当作上一次行动结束，后续规划
             // it->second->plan_ready = 0; //
         }
-        ++num;
+        ++num;  
     }
     
-
-    // for(int i = 0;i<5;i++)
-    // {
-    //     // robot[i].berthgoal = {berth_order[i%5].x, berth_order[i%5].y};  // 机器人的目标泊位是泊位的坐标state
-    //     // robot[i].berthgoal_id = berth_order[i%5].berth_id;  // 机器人的目标泊位的id
-    // }
-    
-    // for(int i = 5;i<10;i++)
-    // {
-
-    //     // robot[i].berthgoal = {berth_order[i%5].x+3, berth_order[i%5].y+3};
-    //     // robot[i].berthgoal_id = berth_order[i%5].berth_id;  // 机器人的目标泊位的id
-    // }
-
     scanf("%d", &boat_capacity); // 载货量
+
     for(int i = 0;i<5;i++)
     {
         boat[i].num = 0; // 船的载货量初始化为0
     }
 
     char okk[100];
-    scanf("%s", okk); // ��ȡOK
-    printf("OK\n"); // �ظ�ok
+    scanf("%s", okk); // 收到OK
+    printf("OK\n"); // 发送ok
     fflush(stdout);
 }
 
@@ -156,10 +144,9 @@ int Input()
         cur_things.push_back(thing); // 加入到当前帧的物品信息
     }
 
-    // 遍历选出的5个泊位 并选择每个泊位在当前帧以及之前帧中最近的物品
-    // 五个泊位选出自己的最近物品之后，更新map容器
-    // 每帧的开始，选出5个泊位最近的物品
-    for(int i = 0; i < 10; i ++)
+
+    //遍历选出的10个泊位 并选择每个泊位在当前帧以及之前帧中最近的物品
+    for(int i = 0; i < 10; i++)
     {
         berth[i].choose_nearest_thing(cur_things); // 选出当前帧最近的物品
         berth[i].choose_nearest_thing();
@@ -200,7 +187,6 @@ int Input()
     scanf("%s", okk); //
     return id;
 }
-
 
 // berth比较函数
 bool compareByTransportTime(const Berth& a, const Berth& b) {

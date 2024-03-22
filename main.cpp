@@ -31,11 +31,12 @@ void interactWithJudger(int totalFrames) {
         int id = Input(); // 读取场面信息 id第几帧
         // cerr << "interactWithJudger" << frame << endl;
         auto frameStartTime = high_resolution_clock::now();
-        // if(id == 1){
-        //     for(int i = 0; i < robot_num; i ++){
-        //         robot[i]->goal = robot[i]->berthgoal;
-        //     }
+        
+        // for(int i = 0; i < 5; i ++){
+        //     cerr << "boat" << i << " 状态： " << boat[i].status << endl;
         // }
+          
+      
         
     // 机器人操作
         for(int i = 0; i < robot_num; ++i){ // 第i个机器人的操作
@@ -78,6 +79,7 @@ void interactWithJudger(int totalFrames) {
                 robot[i]->plan_ready = -1; //准备中
                 continue;
             }
+
             if (robot[i]->cmd != -1)
                 printf("move %d %d\n", i, robot[i]->cmd);
             
@@ -95,7 +97,6 @@ void interactWithJudger(int totalFrames) {
                     and robot[i]->pos.second <= berth[robot[i]->berthgoal_id].y + 3)){
                         robot[i]->getflag = 1;
                         // cerr << robot[i]->pos.first << "," << robot[i]->pos.second << "to" << robot[i]->goal.first << "," << robot[i]->goal.second << endl;
-
                 }
             }
             if (robot[i]->goods == 1) // 机器人携带物品
@@ -120,7 +121,32 @@ void interactWithJudger(int totalFrames) {
         {
             if (boat[i].status == 0) // 船在移动中 不做任何其他事情
             {
-                continue;
+
+                // //在下面的时间范围内，不管船装没装满，直接让其去虚拟点
+                // if (15000 - id >= 3*berth_order[i].transport_time + 485
+                //     and 15000 - id <= 3*berth_order[i].transport_time + 515)  //可修改
+                // {
+                //     printf("go %d\n", i);
+                    
+                // }
+
+                // 船倒数第二次强行发走
+                if(id >= 9990 and id <= 10010)  //可修改
+                {
+                    printf("go %d\n", i);
+                    continue;
+                }
+
+
+                // 船最后一次强行发走发走
+                // 船最后一次去虚拟点的时候如果没有装满物品也需要出发并且能够在最后到达虚拟点，避免浪费最后装的物品
+                if((boat[i].goal == berth_order[i].berth_id and (15000 - id <= berth_order[i+5].transport_time + 5))
+                    or (boat[i].goal == berth_order[i+5].berth_id and (15000 - id <= berth_order[i].transport_time + 5)))
+                {
+                    printf("go %d\n", i);
+                    continue; // 船最后一次去虚拟点，且没有装满物品，不再给该船下达指令
+                }
+                // continue;
             }
             if (boat[i].status == 1) // 船在移动完成或者装货状态（装货状态是到达泊位，不装货状态是到达虚拟点）
             {
@@ -128,22 +154,63 @@ void interactWithJudger(int totalFrames) {
                 if (boat[i].goal != -1) // 船到达且船的目标不是虚拟点==船到达泊位
                 {
                     // 泊位装货物（判题器自动）   用于维护5个船的货物数量 一定会发生，所以放在前面
-                    if (berth[boat[i].goal_berth].num_in_berth <= berth[boat[i].goal_berth].loading_speed)
+                    //if (berth[boat[i].goal_berth].num_in_berth <= berth[boat[i].goal_berth].loading_speed)
+                    if (berth[boat[i].goal].num_in_berth <= berth[boat[i].goal].loading_speed)
                     {
-                        boat[i].num += berth[boat[i].goal_berth].num_in_berth;
-                        berth[boat[i].goal_berth].num_in_berth = 0; // 泊位的物品数量到零 全部裝上船
+                        // boat[i].num += berth[boat[i].goal_berth].num_in_berth;
+                        // berth[boat[i].goal_berth].num_in_berth = 0; // 泊位的物品数量到零 全部裝上船
+                        
+
+                        boat[i].num += berth[boat[i].goal].num_in_berth;
+                        berth[boat[i].goal].num_in_berth = 0; // 泊位的物品数量到零 全部裝上船
+
+                        if (boat[i].num > boat_capacity-5)
+                        {//这就避免了为了只装几个货物还要浪费500帧时间去下一个泊位，这个参数可调整
+                            printf("go %d\n", i);
+                            continue; 
+                        }
+                        //在这里就可以让船去别的泊位了,泊位之间的移动时间都是500帧
+                        if(boat[i].goal == berth_order[i+5].berth_id)
+                            boat[i].goal = berth_order[i].berth_id;
+                        else
+                            boat[i].goal = berth_order[i+5].berth_id;
+                        printf("ship %d %d\n", i,  boat[i].goal);
                     }
                     else
-                    {
-                        boat[i].num += berth[boat[i].goal_berth].loading_speed;
-                        berth[boat[i].goal_berth].num_in_berth -= berth[boat[i].goal_berth].loading_speed;
+                    {//泊位货物数量大于装载速度
+                        // boat[i].num += berth[boat[i].goal_berth].loading_speed;
+                        // berth[boat[i].goal_berth].num_in_berth -= berth[boat[i].goal_berth].loading_speed;
+
+                        boat[i].num += berth[boat[i].goal].loading_speed;
+                        berth[boat[i].goal].num_in_berth -= berth[boat[i].goal_berth].loading_speed;
+                           
                     }
+
+                    // 船倒数第二次强行发走
+                    if(id >= 9990 and id <= 10010)  //可修改
+                    {
+                        printf("go %d\n", i);
+                        continue;
+                    }
+
+
+                    // //
+                    // if (15000 - id >= 3*berth_order[i].transport_time + 485
+                    //     and 15000 - id <= 3*berth_order[i].transport_time + 515)  //可修改
+                    // {
+                    //     printf("go %d\n", i);
+                    //     continue;
+                    // }
+
                     // 船最后一次去虚拟点的时候如果没有装满物品也需要出发并且能够在最后到达虚拟点，避免浪费最后装的物品
-                    if (15000 - id <= berth[boat[i].goal_berth].transport_time + 10)  //可修改
+                    if (15000 - id <= berth[boat[i].goal_berth].transport_time + 5)  //可修改
+
                     {
                         printf("go %d\n", i);
                         continue; // 船最后一次去虚拟点，且没有装满物品，不再给该船下达指令
                     }
+
+
                     // 只有在船装满货物之后，才给船下达指令
                     if (boat[i].num < boat_capacity)
                     {
@@ -152,7 +219,8 @@ void interactWithJudger(int totalFrames) {
                     //船的物品数量被程序装超载，但实际上船不会超载，满了就不会再装了
                     if (boat[i].num >= boat_capacity)
                     {
-                        berth[boat[i].goal_berth].num_in_berth = berth[boat[i].goal_berth].num_in_berth + (boat[i].num - boat_capacity);
+                        //berth[boat[i].goal_berth].num_in_berth = berth[boat[i].goal_berth].num_in_berth + (boat[i].num - boat_capacity);
+                        berth[boat[i].goal].num_in_berth = berth[boat[i].goal].num_in_berth + (boat[i].num - boat_capacity);
                         // boat[i].num = boat_capacity; // 船装满之后，船的货物数量不超过船的容量                        
                     }
                     printf("go %d\n", i);
@@ -163,6 +231,13 @@ void interactWithJudger(int totalFrames) {
                     boat[i].num = 0; // 清空船的货物数量 全部转换成价值
                     // boat[i].goal = boat[i].goal_berth; //此处之后可改目标泊位
                     printf("ship %d %d\n", i, boat[i].goal_berth);
+
+                    // 船倒数第二次强行发走
+                    if(id >= 9990 and id <= 10010)  //可修改
+                    {
+                        printf("go %d\n", i);
+                        continue;
+                    }
                 }
             }
         }
