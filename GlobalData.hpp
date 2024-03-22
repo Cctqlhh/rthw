@@ -78,7 +78,7 @@ void Init()
 
     for (auto it = robot_noid.begin(); it != robot_noid.end(); ++it)
     {
-        for(int i = 0; i < 9; ++i){ // 可调整，若初始化超过5s，则减少该值，值大可减少后续判断
+        for(int i = 0; i < 5; ++i){ // 可调整，若初始化超过5s，则减少该值，值大可减少后续判断
             it->second->berthgoal_id = berth_order[i].berth_id; // 给定初始berthid
             it->second->berthgoal = {berth_order[i].x, berth_order[i].y};
 
