@@ -247,7 +247,7 @@ int main() {
             // 计算运行时间
             auto duration = duration_cast<std::chrono::seconds>(end - start1);
             // 输出运行时间
-            std::cerr << "Program ran for " << duration.count() << " s." << std::endl;
+            // std::cerr << "Program ran for " << duration.count() << " s." << std::endl;
 //////
     // cerr << "Init" << endl;
     thread judgerThread(interactWithJudger, totalFrames);
