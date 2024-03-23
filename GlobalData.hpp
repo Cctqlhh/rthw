@@ -24,10 +24,11 @@ map<State, shared_ptr<Robot>> robot_noid;
 // Berth berth[berth_num + 10];
 vector<Berth> berth(10);
 vector<Berth> berth_order(10);  //对berth进行排序后的容器
-vector<Berth> berth_order_val_and_trans(10);  //对berth进行排序后的容器，按照value和transportime排序
+vector<Berth> berth_order_num_and_trans(10);  //对berth进行排序后的容器，按照num和transportime排序
 // Boat boat[10];
 vector<Boat> boat(5);
 
+int boat_goalberth_flag = 0;   // 是否给船设置了目标泊位，0未设置，1已设置
 int money, boat_capacity, id;
 char ch[N][N];
 Grid gds(n, vector<int>(n, 1)); //全1地图
@@ -41,7 +42,7 @@ bool modifyGoalOfRobot(shared_ptr<Robot>& rbt, const int& curframe_id);
 State NearestBerthOfRobotNow(shared_ptr<Robot>& rbt);
 void findAbleBerth(shared_ptr<Robot>& rbt);
 
-bool compareBy_val_and_trans(const Berth& a, const Berth& b);
+// bool compareBy_num_and_trans(const Berth& a, const Berth& b);
 
 
 void Init()
@@ -70,21 +71,21 @@ void Init()
 
     // 刘：我感觉最好不要对原berth的输入顺序打乱，复制一个新的泊位容器，对新容器排序打乱之后，通过每个元素的id 对应原容器的序号
     berth_order = berth; // 复制一份berth_order，用于排序
-    berth_order_val_and_trans = berth; // 复制一份berth，用于排序，按照valuerate和transportime排序
+    berth_order_num_and_trans = berth; // 复制一份berth，用于排序，按照valuerate和transportime排序
     sort(berth_order.begin(), berth_order.end(), compareByTransportTime);
     // 根据transport_time对vector<Berth>berth排序   排序后的vector元素序号和Berth_id不一致
     // sort(berth.begin(), berth.end(), compareByTransportTime);
 
-    // 设置5艘船的固定目标泊位为前五个泊位
-    for(int i = 0; i < 5; i ++) //判题器的泊位序号是泊位的id号
-    {
-        boat[i].goal_berth = berth_order[i].berth_id;    // 每艘船的固定目标泊位
-        // 船的目标泊位在第一帧input的时候被覆盖为-1 因为此时还没有下达移动命令，机器人目标泊位还处于-1状态
-    }
+    // // 设置5艘船的固定目标泊位为前五个泊位
+    // for(int i = 0; i < 5; i ++) //判题器的泊位序号是泊位的id号
+    // {
+    //     boat[i].goal_berth = berth_order[i].berth_id;    // 每艘船的固定目标泊位
+    //     // 船的目标泊位在第一帧input的时候被覆盖为-1 因为此时还没有下达移动命令，机器人目标泊位还处于-1状态
+    // }
 
     for (auto it = robot_noid.begin(); it != robot_noid.end(); ++it)
     {
-        for(int i = 0; i < 9; ++i){ // 可调整，若初始化超过5s，则减少该值，值大可减少后续判断
+        for(int i = 0; i < 3; ++i){ // 可调整，若初始化超过5s，则减少该值，值大可减少后续判断
             it->second->berthgoal_id = berth_order[i].berth_id; // 给定初始berthid
             it->second->berthgoal = {berth_order[i].x, berth_order[i].y};
 
@@ -201,11 +202,12 @@ bool compareByTransportTime(const Berth& a, const Berth& b) {
 }
 
 // berth比较函数    通过价值和运输时间排序
-bool compareBy_val_and_trans(const Berth& a, const Berth& b)
+bool compareBy_num_and_trans(const Berth& a, const Berth& b)
 {
-    double ratioA= a.totalvalue_till/a.transport_time;
-    double ratioB= b.totalvalue_till/b.transport_time;
-    return ratioA > ratioB;
+    // double ratioA= a.totalnum_tillnow/a.transport_time;
+    // double ratioB= b.totalnum_tillnow/b.transport_time;
+    // return ratioA > ratioB;
+    return a.totalnum_tillnow > b.totalnum_tillnow;
 }
 
 
@@ -231,7 +233,7 @@ bool modifyGoalOfRobot(shared_ptr<Robot>& rbt, const int& curframe_id) {
             }
             // rbt->goal = {berth[rbt->berthgoal_id].nearest_thing.x, berth[rbt->berthgoal_id].nearest_thing.y};
             rbt->goal = {berth[rbt->berthgoal_id].nearest_thing->x, berth[rbt->berthgoal_id].nearest_thing->y};
-            rbt->curthing_value = berth[rbt.berthgoal_id].nearest_thing->value; // 记录当前物品的价值
+            rbt->curthing_value = berth[rbt->berthgoal_id].nearest_thing->value; // 记录当前物品的价值
             rbt->thing_flag = 1; // 有目标物品，但未确定是否可达
 
             auto it = berth[rbt->berthgoal_id].things_map.begin();
@@ -333,15 +335,15 @@ void tenberth_to_fiveberth()
 {
     for(int i = 0;i<5;i++)
     {
-        robot[i].berthgoal = {berth_order_val_and_trans[i%5].x, berth_order_val_and_trans[i%5].y};  // 机器人的目标泊位是泊位的坐标state
-        robot[i].berthgoal_id = berth_order_val_and_trans[i%5].berth_id;  // 机器人的目标泊位的id
+        robot[i]->berthgoal = {berth_order_num_and_trans[i%5].x, berth_order_num_and_trans[i%5].y};  // 机器人的目标泊位是泊位的坐标state
+        robot[i]->berthgoal_id = berth_order_num_and_trans[i%5].berth_id;  // 机器人的目标泊位的id
 
     }
     
     for(int i = 5;i<10;i++)
     {
 
-        robot[i].berthgoal = {berth_order_val_and_trans[i%5].x+3, berth_order_val_and_trans[i%5].y+3};
-        robot[i].berthgoal_id = berth_order_val_and_trans[i%5].berth_id;  // 机器人的目标泊位的id
+        robot[i]->berthgoal = {berth_order_num_and_trans[i%5].x+3, berth_order_num_and_trans[i%5].y+3};
+        robot[i]->berthgoal_id = berth_order_num_and_trans[i%5].berth_id;  // 机器人的目标泊位的id
     }
 }
