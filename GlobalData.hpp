@@ -86,7 +86,7 @@ void Init()
     for (auto it = robot_noid.begin(); it != robot_noid.end(); ++it)
     {
         // map2:1
-        for(int i = 0; i < 1; ++i){ // 可调整，若初始化超过5s，则减少该值，值大可减少后续判断
+        for(int i = 0; i < 10; ++i){ // 可调整，若初始化超过5s，则减少该值，值大可减少后续判断
             it->second->berthgoal_id = berth_order[i].berth_id; // 给定初始berthid
             it->second->berthgoal = {berth_order[i].x, berth_order[i].y};
 
@@ -324,10 +324,11 @@ void findAbleBerth(shared_ptr<Robot>& rbt) {
     // rbt->berthgoal_id = min_id;
     // return min_state;
     while(true){
+        if(rbt->isBerthAble()) break;
         Berth temp_b = berth_order[rand()%10];
         rbt->berthgoal_id = temp_b.berth_id;
         rbt->berthgoal = {temp_b.x+1, temp_b.y+1};
-        if(rbt->isBerthAble()) break;
+        
     }
 }
 

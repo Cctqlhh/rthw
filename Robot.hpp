@@ -133,6 +133,9 @@ struct Robot
         else {
             dsl.toggleCell(next); // 障碍物位置
             next = dsl.peekNext(pos);
+            // if(!dsl.isPathAvailable()){
+
+            // }
             if(map[next.first][next.second] == 1){
                 wait = wait;
             }

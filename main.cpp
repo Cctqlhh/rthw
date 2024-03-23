@@ -20,6 +20,7 @@ mutex mtx;
 condition_variable cv;
 queue<int> computationQueue; // 需要计算路径的机器人队列
 bool finished = false; // 标记是否所有帧处理完成
+const int convert_frame = 2000; // 10转5的帧数
 
 map<int, pair<int, shared_ptr<Things>>> Berth::things_map_record; // robot_id, <berth_id, ptr_thing>
 map<int, shared_ptr<Things>> Berth::things_map_reok; // robot_id, <berth_id, ptr_thing>
@@ -126,7 +127,7 @@ void interactWithJudger(int totalFrames) {
 
 
         // 评估泊位并从10个泊位选出5个泊位
-        if(id >= 5000 and boat_goalberth_flag == 0)
+        if(id >= convert_frame and boat_goalberth_flag == 0)
         {
             sort(berth_order_num_and_trans.begin(), berth_order_num_and_trans.end(), compareBy_num_and_trans);
             tenberth_to_fiveberth();
@@ -146,7 +147,7 @@ void interactWithJudger(int totalFrames) {
         }
 
         // 轮船指令
-        if(id >= 5000)
+        if(id >= convert_frame)
         {
             for (size_t i = 0; i < 5; i++)
             {
@@ -177,8 +178,8 @@ void interactWithJudger(int totalFrames) {
                             // 船将不用的泊位装完之后并且还有剩余容量，去另外一个可用的泊位
                             if(berth[boat[i].goal_berth].num_in_berth == 0 and boat[i].num <= boat_capacity)
                             {
-                                cerr<<"berth_id:    "<<boat[i].goal_berth<<"    "<<berth[boat[i].goal_berth].berth_id<<"    num_in_berth:    "<<berth[boat[i].goal_berth].num_in_berth<<endl;
-                                cerr<<"duiying_boat_num:    "<<boat[i].num<<endl;
+                                // cerr<<"berth_id:    "<<boat[i].goal_berth<<"    "<<berth[boat[i].goal_berth].berth_id<<"    num_in_berth:    "<<berth[boat[i].goal_berth].num_in_berth<<endl;
+                                // cerr<<"duiying_boat_num:    "<<boat[i].num<<endl;
                                 boat[i].goal_berth = berth_order_num_and_trans[i].berth_id;
 
                                 printf("ship %d %d\n", i,  boat[i].goal_berth);
@@ -187,21 +188,22 @@ void interactWithJudger(int totalFrames) {
 
 
                         // 3a+500
-                        if (15000 - id >= 3*berth_order[i].transport_time + 500-15
-                            and 15000 - id <= 3*berth_order[i].transport_time + 500 + 15)  //可修改
+                        // if (15000 - id >= 3*berth_order[i].transport_time + 300-15
+                        //     and 15000 - id <= 3*berth_order[i].transport_time + 300 + 15)  //可修改
+                        if (15000 - frame  == 3*berth_order[i].transport_time + 300)  //可修改
                         {
-                            cerr<<"berth_id:    "<<boat[i].goal_berth<<"    "<<berth[boat[i].goal_berth].berth_id<<"    num_in_berth:    "<<berth[boat[i].goal_berth].num_in_berth<<endl;
-                            cerr<<"duiying_boat_num:    "<<boat[i].num<<endl;
+                            // cerr<<"berth_id:    "<<boat[i].goal_berth<<"    "<<berth[boat[i].goal_berth].berth_id<<"    num_in_berth:    "<<berth[boat[i].goal_berth].num_in_berth<<endl;
+                            // cerr<<"duiying_boat_num:    "<<boat[i].num<<endl;
                             printf("go %d\n", i);
                             continue;
                         }
 
                         // 船最后一次去虚拟点的时候如果没有装满物品也需要出发并且能够在最后到达虚拟点，避免浪费最后装的物品
-                        if (15000 - id <= berth[boat[i].goal_berth].transport_time + 5)  //可修改
+                        if (15000 - id <= berth[boat[i].goal_berth].transport_time + 10)  //可修改
 
                         {
-                            cerr<<"berth_id:    "<<boat[i].goal_berth<<"    "<<berth[boat[i].goal_berth].berth_id<<"    num_in_berth:    "<<berth[boat[i].goal_berth].num_in_berth<<endl;
-                            cerr<<"duiying_boat_num:    "<<boat[i].num<<endl;
+                            // cerr<<"berth_id:    "<<boat[i].goal_berth<<"    "<<berth[boat[i].goal_berth].berth_id<<"    num_in_berth:    "<<berth[boat[i].goal_berth].num_in_berth<<endl;
+                            // cerr<<"duiying_boat_num:    "<<boat[i].num<<endl;
                             printf("go %d\n", i);
                             continue; // 船最后一次去虚拟点，且没有装满物品，不再给该船下达指令
                         }
