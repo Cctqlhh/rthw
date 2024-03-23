@@ -46,6 +46,8 @@ void interactWithJudger(int totalFrames) {
             
             if(robot[i]->thing_flag == 2){ // 目标物品可达
                 Berth::things_map_record.erase(i);
+                robot[i]->start_time = id;
+                robot[i]->thing_dir= judge_dir(robot[i]->pos.first, robot[i]->pos.second, robot[i]->goal.first, robot[i]->goal.second);
             }
             else if(robot[i]->thing_flag == 3){ // 目标物品不可达
                 Berth::things_map_reok.insert(make_pair(Berth::things_map_record[i].first, Berth::things_map_record[i].second));
@@ -109,6 +111,9 @@ void interactWithJudger(int totalFrames) {
                 {
                     printf("pull %d\n", i);                      // 指令：pull 机器人id0-9  放货  每个机器人在自己对应泊位放货
                     
+                    
+                    robot[i]->end_time = id; // 结束时间
+                    berth[robot[i]->berthgoal_id].update_dir_score(robot[i]);
                     berth[robot[i]->berthgoal_id].num_in_berth += 1; // 泊位物品数量+1
                     // berth[robot[i]->berthgoal_id].totalvalue_till += robot[i]->curthing_value;
                     // berth[robot[i]->berthgoal_id].totalnum_tillnow += 1;    // 每个泊位的累积物品数
@@ -182,9 +187,11 @@ void interactWithJudger(int totalFrames) {
 
 
                         // 3a+500
-                        if (15000 - id >= 3*berth_order[i].transport_time + 485
-                            and 15000 - id <= 3*berth_order[i].transport_time + 515)  //可修改
+                        if (15000 - id >= 3*berth_order[i].transport_time + 500-15
+                            and 15000 - id <= 3*berth_order[i].transport_time + 500 + 15)  //可修改
                         {
+                            cerr<<"berth_id:    "<<boat[i].goal_berth<<"    "<<berth[boat[i].goal_berth].berth_id<<"    num_in_berth:    "<<berth[boat[i].goal_berth].num_in_berth<<endl;
+                            cerr<<"duiying_boat_num:    "<<boat[i].num<<endl;
                             printf("go %d\n", i);
                             continue;
                         }

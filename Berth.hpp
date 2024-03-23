@@ -50,6 +50,12 @@ struct Berth
     static map<int, pair<int, shared_ptr<Things>>> things_map_record; // robot_id, <berth_id, ptr_thing>
     static map<int, shared_ptr<Things>> things_map_reok; // robot_id, <berth_id, ptr_thing>
 
+    vector<double> dir_score = {80, 80, 80, 80};     // 每个泊位的方向得分
+
+    vector<int> dir_cum_num = {1, 1, 1, 1};     // 每个泊位的方向的累积物品数量
+    vector<double> dir_cum_frame = {80, 80, 80, 80};     // 每个泊位的方向的物品的累积时间帧
+    double a = 0.9; // 泊位的方向得分平滑系数
+
     Berth(){}
     Berth(int x, int y, int transport_time, int loading_speed) {
         this -> x = x;
@@ -72,16 +78,8 @@ struct Berth
             for (auto it = cur_things.begin(); it != cur_things.end(); ++it)
             {
                 distance = manhattanDistance(this->x, this->y, (*it)->x, (*it)->y);
-                // distance = abs(this->x - it->x) + abs(this->y - it->y); // 修改为曼哈顿距离函数！！！！！！！！！！！
-                // // it->dst_to_breth = distance;
-                // //选出当前帧的最近物品
-                // if (distance < curframe_min_distance)  //如果当前帧物品距离比历史最近物品更近，则更新
-                // {
-                //     curframe_min_distance = distance;
-                //     curframe_nearest_thing = *it;
-                //     curframe_it = it;
-                // }
-                // 每个泊位存储了每一帧所有的物品信息
+                int dir = berth_judge_dir(this->x, this->y, (*it)->x, (*it)->y);
+                distance *= dir_score[dir];
                 things_map.insert(make_pair(make_pair(distance, (*it)->value), *it));
             }
         
@@ -99,7 +97,10 @@ struct Berth
         {
              for(auto it = things_map_reok.begin(); it != things_map_reok.end(); ++it) {
             // 检查是否已存在
-                std::pair<int, int> key = std::make_pair(manhattanDistance(this->x, this->y, it->second->x, it->second->y), it->second->value);
+                distance = manhattanDistance(this->x, this->y, it->second->x, it->second->y);
+                int dir = berth_judge_dir(this->x, this->y, it->second->x, it->second->y);
+                distance *= dir_score[dir];
+                std::pair<int, int> key = std::make_pair(distance, it->second->value);
                 if(it->first != this->berth_id && !existsInMultimap(things_map, key, it->second)) {
                     things_map.insert(std::make_pair(key, it->second));
                 }
@@ -168,4 +169,41 @@ bool existsInMultimap(const std::multimap<State, std::shared_ptr<Things>, Compar
 
     }
 
+    void update_dir_score(shared_ptr<Robot> &rbt){
+        auto dir = rbt->thing_dir;
+        dir_cum_frame[dir] += rbt->end_time - rbt->start_time;
+        dir_cum_num[dir] += 1;
+        dir_score[dir] = a * dir_score[dir] + (1 - a) * dir_cum_frame[dir] / dir_cum_num[dir];
+    }
+
+    int berth_judge_dir(const int& x0, const int& y0, const int& x, const int& y)
+    {
+        if(x - x0 >= 0 and y - y0 >= 0)
+        {
+            return 0;
+        }
+
+        else if(x - x0 < 0 and y - y0 >= 0)
+        {
+            return 1;
+        }
+
+        else if(x - x0 < 0 and y - y0 < 0)
+        {
+            return 2;
+        }
+
+        else if(x - x0 >= 0 and y - y0 < 0)
+        {
+            return 3;
+        }
+        else
+        {
+            return -1;
+        }
+    }
+
 };
+
+
+

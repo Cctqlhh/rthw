@@ -41,7 +41,7 @@ bool compareByTransportTime(const Berth& a, const Berth& b);
 bool modifyGoalOfRobot(shared_ptr<Robot>& rbt, const int& curframe_id);
 State NearestBerthOfRobotNow(shared_ptr<Robot>& rbt);
 void findAbleBerth(shared_ptr<Robot>& rbt);
-
+int judge_dir(const int& x0, const int& y0, const int& x, const int& y);
 // bool compareBy_num_and_trans(const Berth& a, const Berth& b);
 
 
@@ -85,7 +85,8 @@ void Init()
 
     for (auto it = robot_noid.begin(); it != robot_noid.end(); ++it)
     {
-        for(int i = 0; i < 3; ++i){ // 可调整，若初始化超过5s，则减少该值，值大可减少后续判断
+        // map2:1
+        for(int i = 0; i < 1; ++i){ // 可调整，若初始化超过5s，则减少该值，值大可减少后续判断
             it->second->berthgoal_id = berth_order[i].berth_id; // 给定初始berthid
             it->second->berthgoal = {berth_order[i].x, berth_order[i].y};
 
@@ -220,9 +221,10 @@ bool modifyGoalOfRobot(shared_ptr<Robot>& rbt, const int& curframe_id) {
         and rbt->pos.second >= berth[rbt->berthgoal_id].y 
         and rbt->pos.second <= berth[rbt->berthgoal_id].y + 3)){
             
-            if(rbt->thing_flag == -1)
+            if(rbt->thing_flag == -1){ // 正常到达
                 rbt->thing_flag = 0; // 无目标物品
-            else if(rbt->thing_flag == 3){
+            }
+            else if(rbt->thing_flag == 3){ // 不能到达重新选berth
                 // 其他berth
                 rbt->thing_flag = 0;
             }
@@ -345,5 +347,32 @@ void tenberth_to_fiveberth()
 
         robot[i]->berthgoal = {berth_order_num_and_trans[i%5].x+3, berth_order_num_and_trans[i%5].y+3};
         robot[i]->berthgoal_id = berth_order_num_and_trans[i%5].berth_id;  // 机器人的目标泊位的id
+    }
+}
+
+int judge_dir(const int& x0, const int& y0, const int& x, const int& y)
+{
+    if(x - x0 >= 0 and y - y0 >= 0)
+    {
+        return 0;
+    }
+
+    else if(x - x0 < 0 and y - y0 >= 0)
+    {
+        return 1;
+    }
+
+    else if(x - x0 < 0 and y - y0 < 0)
+    {
+        return 2;
+    }
+
+    else if(x - x0 >= 0 and y - y0 < 0)
+    {
+        return 3;
+    }
+    else
+    {
+        return -1;
     }
 }

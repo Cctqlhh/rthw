@@ -21,6 +21,9 @@ struct Robot
     int plan_ready = 0; // 0未准备好，1准备好，-1正在规划
     int stop_flag = 0; // 0未因莫名原因停止，1为第一种情况，2为第二种情况
     double curthing_value = 0; // 当前机器人手里的物品价值
+    double start_time = 0; // 物品开始时间
+    double end_time = 0; // 物品结束时间
+    int thing_dir = -1;
 
     Robot() {}
     Robot(int startX, int startY):
@@ -211,5 +214,6 @@ struct Robot
             stop_flag = 2;
         }
     }
+
 
 };
