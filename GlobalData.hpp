@@ -38,6 +38,7 @@ bool compareByTransportTime(const Berth& a, const Berth& b);
 bool modifyGoalOfRobot(shared_ptr<Robot>& rbt, const int& curframe_id);
 State NearestBerthOfRobotNow(shared_ptr<Robot>& rbt);
 void findAbleBerth(shared_ptr<Robot>& rbt);
+int judge_dir(const int& x0, const int& y0, const int& x, const int& y);
 
 void Init()
 {
@@ -323,5 +324,32 @@ void findAbleBerth(shared_ptr<Robot>& rbt) {
         rbt->berthgoal_id = temp_b.berth_id;
         rbt->berthgoal = {temp_b.x+1, temp_b.y+1};
         if(rbt->isBerthAble()) break;
+    }
+}
+
+int judge_dir(const int& x0, const int& y0, const int& x, const int& y)
+{
+    if(x - x0 >= 0 and y - y0 >= 0)
+    {
+        return 0;
+    }
+
+    else if(x - x0 < 0 and y - y0 >= 0)
+    {
+        return 1;
+    }
+
+    else if(x - x0 < 0 and y - y0 < 0)
+    {
+        return 2;
+    }
+
+    else if(x - x0 >= 0 and y - y0 < 0)
+    {
+        return 3;
+    }
+    else
+    {
+        return -1;
     }
 }
